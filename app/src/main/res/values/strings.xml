@@ -73,7 +73,8 @@
     <string name="continue_action">Continue</string>
     <string name="restart">Restart</string>
     <string name="end_rest">End</string>
-    <string name="start_rest">Start rest</string>
+    <string name="series_completion_hint">Checking a series starts its rest timer automatically.</string>
+    <string name="series_number">Set %1$d</string>
     <string name="cancel_workout">Cancel workout</string>
     <string name="finish_workout">Finish workout</string>
     <string name="finish_workout_title">Finish this workout?</string>

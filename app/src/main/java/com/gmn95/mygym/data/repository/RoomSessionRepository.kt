@@ -3,6 +3,7 @@ package com.gmn95.mygym.data.repository
 import androidx.room.withTransaction
 import com.gmn95.mygym.data.local.MyGymDatabase
 import com.gmn95.mygym.data.local.SessionExerciseEntity
+import com.gmn95.mygym.data.local.SessionExerciseSetEntity
 import com.gmn95.mygym.data.local.SessionRestTimerEntity
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import com.gmn95.mygym.domain.session.SessionClock
@@ -24,6 +25,7 @@ class RoomSessionRepository(
     private val workoutItemDao = database.workoutItemDao()
     private val sessionDao = database.workoutSessionDao()
     private val sessionExerciseDao = database.sessionExerciseDao()
+    private val sessionExerciseSetDao = database.sessionExerciseSetDao()
     private val restTimerDao = database.sessionRestTimerDao()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,9 +36,14 @@ class RoomSessionRepository(
             } else {
                 combine(
                     sessionExerciseDao.observeBySession(session.id),
+                    sessionExerciseSetDao.observeBySession(session.id),
                     restTimerDao.observeBySession(session.id),
-                ) { exerciseEntities, timerEntity ->
-                    val exercises = exerciseEntities.map { it.toModel() }
+                ) { exerciseEntities, setEntities, timerEntity ->
+                    val exercises = exerciseEntities.map { exercise ->
+                        exercise.toModel(
+                            setEntities.filter { it.sessionExerciseId == exercise.id },
+                        )
+                    }
                     ActiveWorkoutSession(
                         id = session.id,
                         workoutGroupId = session.workoutGroupId,
@@ -88,21 +95,32 @@ class RoomSessionRepository(
                     activeAnchorBootCount = clock.bootCount(),
                 ),
             )
-            sessionExerciseDao.insertAll(
-                items.map { row ->
-                    SessionExerciseEntity(
-                        id = idFactory(),
-                        sessionId = sessionId,
-                        workoutItemId = row.item.id,
-                        exerciseNameSnapshot = row.exerciseName,
-                        exerciseNotesSnapshot = row.exerciseNotes,
-                        position = row.item.position,
-                        sets = row.item.sets,
-                        repetitionsMin = row.item.repetitionsMin,
-                        repetitionsMax = row.item.repetitionsMax,
-                        restSeconds = row.item.restSeconds,
-                        isCompleted = false,
-                    )
+            val sessionExercises = items.map { row ->
+                SessionExerciseEntity(
+                    id = idFactory(),
+                    sessionId = sessionId,
+                    workoutItemId = row.item.id,
+                    exerciseNameSnapshot = row.exerciseName,
+                    exerciseNotesSnapshot = row.exerciseNotes,
+                    position = row.item.position,
+                    sets = row.item.sets,
+                    repetitionsMin = row.item.repetitionsMin,
+                    repetitionsMax = row.item.repetitionsMax,
+                    restSeconds = row.item.restSeconds,
+                    isCompleted = false,
+                )
+            }
+            sessionExerciseDao.insertAll(sessionExercises)
+            sessionExerciseSetDao.insertAll(
+                sessionExercises.flatMap { exercise ->
+                    (1..exercise.sets).map { position ->
+                        SessionExerciseSetEntity(
+                            id = idFactory(),
+                            sessionExerciseId = exercise.id,
+                            position = position,
+                            isCompleted = false,
+                        )
+                    }
                 },
             )
             sessionId
@@ -146,35 +164,24 @@ class RoomSessionRepository(
         }
     }
 
-    override suspend fun setExerciseCompleted(
+    override suspend fun setExerciseSetCompleted(
         sessionExerciseId: String,
+        sessionExerciseSetId: String,
         isCompleted: Boolean,
     ) {
         database.withTransaction {
             val active = sessionDao.getActive() ?: return@withTransaction
             val exercise = sessionExerciseDao.getById(sessionExerciseId) ?: return@withTransaction
             check(exercise.sessionId == active.id)
-            sessionExerciseDao.setCompleted(sessionExerciseId, isCompleted)
-        }
-    }
-
-    override suspend fun startRest(sessionExerciseId: String) {
-        database.withTransaction {
-            val active = sessionDao.getActive() ?: return@withTransaction
-            val exercise = sessionExerciseDao.getById(sessionExerciseId) ?: return@withTransaction
-            check(exercise.sessionId == active.id)
-            val duration = exercise.restSeconds * 1_000L
-            restTimerDao.upsert(
-                SessionRestTimerEntity(
-                    sessionId = active.id,
-                    sessionExerciseId = exercise.id,
-                    status = RestTimerStatus.RUNNING.name,
-                    durationMillis = duration,
-                    remainingAtAnchorMillis = duration,
-                    anchorElapsedRealtime = clock.elapsedRealtimeMillis(),
-                    anchorBootCount = clock.bootCount(),
-                ),
-            )
+            val set = sessionExerciseSetDao.getById(sessionExerciseSetId) ?: return@withTransaction
+            check(set.sessionExerciseId == exercise.id)
+            sessionExerciseSetDao.update(set.copy(isCompleted = isCompleted))
+            val allSeriesCompleted = sessionExerciseSetDao.getByExercise(exercise.id)
+                .all(SessionExerciseSetEntity::isCompleted)
+            sessionExerciseDao.setCompleted(exercise.id, allSeriesCompleted)
+            if (isCompleted) {
+                startRestForExercise(active, exercise)
+            }
         }
     }
 
@@ -336,7 +343,9 @@ class RoomSessionRepository(
             currentBootCount = clock.bootCount(),
         )
 
-    private fun SessionExerciseEntity.toModel() = ActiveSessionExercise(
+    private fun SessionExerciseEntity.toModel(
+        setEntities: List<SessionExerciseSetEntity>,
+    ) = ActiveSessionExercise(
         id = id,
         name = exerciseNameSnapshot,
         notes = exerciseNotesSnapshot,
@@ -346,7 +355,32 @@ class RoomSessionRepository(
         repetitionsMax = repetitionsMax,
         restSeconds = restSeconds,
         isCompleted = isCompleted,
+        series = setEntities.map {
+            ActiveExerciseSet(
+                id = it.id,
+                position = it.position,
+                isCompleted = it.isCompleted,
+            )
+        },
     )
+
+    private suspend fun startRestForExercise(
+        active: WorkoutSessionEntity,
+        exercise: SessionExerciseEntity,
+    ) {
+        val duration = exercise.restSeconds * 1_000L
+        restTimerDao.upsert(
+            SessionRestTimerEntity(
+                sessionId = active.id,
+                sessionExerciseId = exercise.id,
+                status = RestTimerStatus.RUNNING.name,
+                durationMillis = duration,
+                remainingAtAnchorMillis = duration,
+                anchorElapsedRealtime = clock.elapsedRealtimeMillis(),
+                anchorBootCount = clock.bootCount(),
+            ),
+        )
+    }
 
     private fun SessionRestTimerEntity.toModel(
         exercises: List<ActiveSessionExercise>,

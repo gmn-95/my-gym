@@ -68,7 +68,31 @@ class RoomSessionRepositoryTest {
         assertEquals("Supino", active.exercises.single().name)
         assertEquals(5_000, active.activeAccumulatedMillis)
 
-        sessionRepository.setExerciseCompleted(active.exercises.single().id, true)
+        val firstSeries = active.exercises.single().series.first()
+        sessionRepository.setExerciseSetCompleted(
+            sessionExerciseId = active.exercises.single().id,
+            sessionExerciseSetId = firstSeries.id,
+            isCompleted = true,
+        )
+        assertEquals(
+            RestTimerStatus.RUNNING,
+            sessionRepository.observeActiveSession().first()!!.restTimer!!.status,
+        )
+        assertEquals(
+            false,
+            sessionRepository.observeActiveSession().first()!!.exercises.single().isCompleted,
+        )
+        active.exercises.single().series.drop(1).forEach { set ->
+            sessionRepository.setExerciseSetCompleted(
+                sessionExerciseId = active.exercises.single().id,
+                sessionExerciseSetId = set.id,
+                isCompleted = true,
+            )
+        }
+        assertEquals(
+            true,
+            sessionRepository.observeActiveSession().first()!!.exercises.single().isCompleted,
+        )
         sessionRepository.resumeSession()
         clock.advance(2_000)
         sessionRepository.completeActiveSession()
@@ -84,9 +108,14 @@ class RoomSessionRepositoryTest {
         val workoutId = workoutRepository.createWorkout("B — Inferiores")
         workoutRepository.createAndAddExercise(workoutId, "Agachamento", null)
         sessionRepository.startSession(workoutId)
-        val exerciseId = sessionRepository.observeActiveSession().first()!!.exercises.single().id
+        val exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        val firstSeries = exercise.series.first()
 
-        sessionRepository.startRest(exerciseId)
+        sessionRepository.setExerciseSetCompleted(
+            sessionExerciseId = exercise.id,
+            sessionExerciseSetId = firstSeries.id,
+            isCompleted = true,
+        )
         clock.advance(10_000)
         sessionRepository.pauseRest()
         var timer = sessionRepository.observeActiveSession().first()!!.restTimer!!

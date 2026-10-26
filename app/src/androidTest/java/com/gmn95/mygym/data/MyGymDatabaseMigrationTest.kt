@@ -93,8 +93,54 @@ class MyGymDatabaseMigrationTest {
         }
     }
 
+    @Test
+    @Throws(IOException::class)
+    fun migrateFrom3To4CreatesSeriesForExistingSessionSnapshots() {
+        helper.createDatabase(TEST_DATABASE_3, 3).apply {
+            execSQL(
+                """
+                INSERT INTO workout_sessions (
+                    id, workout_group_id, workout_name_snapshot, status,
+                    started_at_epoch_millis, active_accumulated_millis
+                ) VALUES ('session-1', 'workout-1', 'Treino A', 'COMPLETED', 1000, 1000)
+                """.trimIndent(),
+            )
+            execSQL(
+                """
+                INSERT INTO session_exercises (
+                    id, session_id, workout_item_id, exercise_name_snapshot,
+                    position, sets, repetitions_min, rest_seconds, is_completed
+                ) VALUES ('exercise-1', 'session-1', 'item-1', 'Supino', 0, 3, 10, 60, 1)
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val database = helper.runMigrationsAndValidate(
+            TEST_DATABASE_3,
+            4,
+            true,
+            MyGymDatabase.MIGRATION_3_4,
+        )
+
+        database.query(
+            """
+            SELECT position, is_completed
+            FROM session_exercise_sets
+            WHERE session_exercise_id = 'exercise-1'
+            ORDER BY position
+            """.trimIndent(),
+        ).use {
+            assertEquals(3, it.count)
+            while (it.moveToNext()) {
+                assertEquals(1, it.getInt(1))
+            }
+        }
+    }
+
     private companion object {
         const val TEST_DATABASE = "migration-test"
         const val TEST_DATABASE_2 = "migration-test-2"
+        const val TEST_DATABASE_3 = "migration-test-3"
     }
 }

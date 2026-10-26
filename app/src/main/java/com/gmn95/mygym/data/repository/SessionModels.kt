@@ -35,6 +35,13 @@ data class ActiveSessionExercise(
     val repetitionsMax: Int?,
     val restSeconds: Int,
     val isCompleted: Boolean,
+    val series: List<ActiveExerciseSet>,
+)
+
+data class ActiveExerciseSet(
+    val id: String,
+    val position: Int,
+    val isCompleted: Boolean,
 )
 
 data class ActiveRestTimer(

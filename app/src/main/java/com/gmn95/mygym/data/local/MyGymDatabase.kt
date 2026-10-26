@@ -16,8 +16,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         WorkoutSessionEntity::class,
         SessionExerciseEntity::class,
         SessionRestTimerEntity::class,
+        SessionExerciseSetEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class MyGymDatabase : RoomDatabase() {
@@ -28,6 +29,7 @@ abstract class MyGymDatabase : RoomDatabase() {
     abstract fun workoutSessionDao(): WorkoutSessionDao
     abstract fun sessionExerciseDao(): SessionExerciseDao
     abstract fun sessionRestTimerDao(): SessionRestTimerDao
+    abstract fun sessionExerciseSetDao(): SessionExerciseSetDao
 
     companion object {
         private const val DATABASE_NAME = "my-gym.db"
@@ -167,12 +169,62 @@ abstract class MyGymDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `session_exercise_sets` (
+                        `id` TEXT NOT NULL,
+                        `session_exercise_id` TEXT NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `is_completed` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`),
+                        FOREIGN KEY(`session_exercise_id`) REFERENCES `session_exercises`(`id`)
+                            ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_session_exercise_sets_session_exercise_id` " +
+                        "ON `session_exercise_sets` (`session_exercise_id`)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_session_exercise_sets_session_exercise_id_position` " +
+                        "ON `session_exercise_sets` (`session_exercise_id`, `position`)",
+                )
+                db.execSQL(
+                    """
+                    WITH RECURSIVE generated_sets(session_exercise_id, position, total) AS (
+                        SELECT id, 1, sets
+                        FROM session_exercises
+                        WHERE sets > 0
+                        UNION ALL
+                        SELECT session_exercise_id, position + 1, total
+                        FROM generated_sets
+                        WHERE position < total
+                    )
+                    INSERT INTO session_exercise_sets (
+                        id, session_exercise_id, position, is_completed
+                    )
+                    SELECT
+                        generated_sets.session_exercise_id || ':series:' || generated_sets.position,
+                        generated_sets.session_exercise_id,
+                        generated_sets.position,
+                        session_exercises.is_completed
+                    FROM generated_sets
+                    INNER JOIN session_exercises
+                        ON session_exercises.id = generated_sets.session_exercise_id
+                    """.trimIndent(),
+                )
+            }
+        }
+
         fun create(context: Context): MyGymDatabase =
             Room.databaseBuilder(
                 context,
                 MyGymDatabase::class.java,
                 DATABASE_NAME,
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

@@ -47,8 +47,7 @@ fun SessionScreen(
     onBack: () -> Unit,
     onPauseSession: () -> Unit,
     onResumeSession: () -> Unit,
-    onSetExerciseCompleted: (String, Boolean) -> Unit,
-    onStartRest: (String) -> Unit,
+    onSetSeriesCompleted: (String, String, Boolean) -> Unit,
     onPauseRest: () -> Unit,
     onResumeRest: () -> Unit,
     onResetRest: () -> Unit,
@@ -165,10 +164,9 @@ fun SessionScreen(
                     items(session.exercises, key = ActiveSessionExercise::id) { exercise ->
                         SessionExerciseCard(
                             exercise = exercise,
-                            onCompletedChange = { completed ->
-                                onSetExerciseCompleted(exercise.id, completed)
+                            onSeriesCompletedChange = { setId, completed ->
+                                onSetSeriesCompleted(exercise.id, setId, completed)
                             },
-                            onStartRest = { onStartRest(exercise.id) },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
                     }
@@ -354,8 +352,7 @@ private fun RestTimerCard(
 @Composable
 private fun SessionExerciseCard(
     exercise: ActiveSessionExercise,
-    onCompletedChange: (Boolean) -> Unit,
-    onStartRest: () -> Unit,
+    onSeriesCompletedChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val repetitions = exercise.repetitionsMax?.let {
@@ -369,42 +366,46 @@ private fun SessionExerciseCard(
 
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = exercise.isCompleted,
-                    onCheckedChange = onCompletedChange,
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = exercise.name,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            textDecoration = if (exercise.isCompleted) {
-                                TextDecoration.LineThrough
-                            } else {
-                                TextDecoration.None
-                            },
-                        ),
+            Text(
+                text = exercise.name,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    textDecoration = if (exercise.isCompleted) {
+                        TextDecoration.LineThrough
+                    } else {
+                        TextDecoration.None
+                    },
+                ),
+            )
+            Text(
+                text = stringResource(
+                    R.string.exercise_configuration,
+                    exercise.sets,
+                    repetitions,
+                    rest,
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.series_completion_hint),
+                modifier = Modifier.padding(top = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            exercise.series.forEach { set ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = set.isCompleted,
+                        onCheckedChange = { completed ->
+                            onSeriesCompletedChange(set.id, completed)
+                        },
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.exercise_configuration,
-                            exercise.sets,
-                            repetitions,
-                            rest,
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Text(stringResource(R.string.series_number, set.position))
                 }
-            }
-            Button(
-                onClick = onStartRest,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top = 8.dp),
-            ) {
-                Text(stringResource(R.string.start_rest))
             }
         }
     }

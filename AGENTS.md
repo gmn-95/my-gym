@@ -43,6 +43,8 @@ Este arquivo contém decisões obrigatórias para qualquer alteração futura ne
 - Operações compostas que não podem ficar parcialmente aplicadas devem usar transações.
 - Exclusões de fichas não poderão apagar snapshots históricos.
 - Estado necessário para recuperar uma sessão nunca deve existir apenas na memória da interface.
+- O snapshot da sessão deve registrar cada série individualmente; a conclusão agregada do exercício é derivada dessas séries.
+- Marcar uma série como concluída inicia automaticamente o descanso configurado para o exercício.
 - Durações devem usar âncoras de `SystemClock.elapsedRealtime()`, nunca diferenças do relógio civil.
 - Colocar o app em segundo plano apenas checkpointa os cronômetros; não pausa sessão nem descanso.
 - Após mudança do contador de boot, cronômetros ativos devem ser recuperados pausados no último checkpoint.

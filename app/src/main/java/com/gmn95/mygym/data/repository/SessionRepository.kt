@@ -15,9 +15,11 @@ interface SessionRepository {
 
     suspend fun resumeSession()
 
-    suspend fun setExerciseCompleted(sessionExerciseId: String, isCompleted: Boolean)
-
-    suspend fun startRest(sessionExerciseId: String)
+    suspend fun setExerciseSetCompleted(
+        sessionExerciseId: String,
+        sessionExerciseSetId: String,
+        isCompleted: Boolean,
+    )
 
     suspend fun pauseRest()
 
