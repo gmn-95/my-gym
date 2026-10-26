@@ -102,6 +102,10 @@ class RoomSessionRepositoryTest {
         val stored = database.workoutSessionDao().getById(sessionId)!!
         assertEquals(WorkoutSessionStatus.COMPLETED.name, stored.status)
         assertEquals(7_000, stored.activeAccumulatedMillis)
+        val history = sessionRepository.observeCompletedSessions().first()
+        assertEquals(1, history.size)
+        assertEquals("A — Superiores", history.single().workoutName)
+        assertEquals(1, history.single().completedExerciseCount)
     }
 
     @Test

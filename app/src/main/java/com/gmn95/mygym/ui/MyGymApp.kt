@@ -11,8 +11,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
+import com.gmn95.mygym.feature.history.HistoryViewModel
 import com.gmn95.mygym.feature.session.SessionViewModel
 import com.gmn95.mygym.ui.editor.WorkoutEditorScreen
+import com.gmn95.mygym.ui.history.HistoryScreen
 import com.gmn95.mygym.ui.home.HomeScreen
 import com.gmn95.mygym.ui.session.SessionScreen
 import com.gmn95.mygym.ui.theme.MyGymTheme
@@ -23,6 +25,7 @@ fun MyGymApp() {
         val application = LocalContext.current.applicationContext as MyGymApplication
         var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
         var showActiveSession by rememberSaveable { mutableStateOf(false) }
+        var showHistory by rememberSaveable { mutableStateOf(false) }
 
         val workoutId = selectedWorkoutId
         when {
@@ -59,6 +62,17 @@ fun MyGymApp() {
                 )
             }
 
+            showHistory -> {
+                val historyViewModel: HistoryViewModel = viewModel(
+                    factory = HistoryViewModel.factory(application.sessionRepository),
+                )
+                val uiState by historyViewModel.uiState.collectAsStateWithLifecycle()
+                HistoryScreen(
+                    uiState = uiState,
+                    onBack = { showHistory = false },
+                )
+            }
+
             workoutId == null -> {
             val homeViewModel: HomeViewModel = viewModel(
                 factory = HomeViewModel.factory(
@@ -75,6 +89,7 @@ fun MyGymApp() {
                     }
                 },
                 onOpenWorkout = { selectedWorkoutId = it },
+                onOpenHistory = { showHistory = true },
                 onDuplicateWorkout = homeViewModel::duplicateWorkout,
                 onDeleteWorkout = homeViewModel::deleteWorkout,
                 onStartWorkout = { id ->

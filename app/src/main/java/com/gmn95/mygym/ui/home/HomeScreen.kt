@@ -45,6 +45,7 @@ fun HomeScreen(
     uiState: HomeUiState,
     onCreateWorkout: (String) -> Unit,
     onOpenWorkout: (String) -> Unit,
+    onOpenHistory: () -> Unit,
     onDuplicateWorkout: (String, String) -> Unit,
     onDeleteWorkout: (String) -> Unit,
     onStartWorkout: (String) -> Unit,
@@ -88,11 +89,21 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 20.dp),
         ) {
-            Text(
-                text = stringResource(R.string.my_workouts),
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
-                style = MaterialTheme.typography.headlineMedium,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.my_workouts),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                TextButton(onClick = onOpenHistory) {
+                    Text(stringResource(R.string.history))
+                }
+            }
             Text(
                 text = stringResource(R.string.home_description),
                 modifier = Modifier.padding(bottom = 16.dp),
@@ -264,8 +275,13 @@ private fun WorkoutCard(
                 modifier = Modifier.padding(top = 4.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            val durationText = workout.averageDurationMillis?.let(::formatDuration) ?: stringResource(
+                R.string.no_history,
+            )
             Text(
-                text = stringResource(R.string.no_history),
+                text = workout.averageDurationMillis?.let {
+                    stringResource(R.string.average_duration, durationText)
+                } ?: durationText,
                 modifier = Modifier.padding(top = 2.dp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
@@ -363,5 +379,13 @@ private fun EmptyContent() {
             )
         }
     }
+}
+
+private fun formatDuration(durationMillis: Long): String {
+    val totalSeconds = durationMillis.coerceAtLeast(0) / 1_000
+    val hours = totalSeconds / 3_600
+    val minutes = totalSeconds % 3_600 / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d:%02d".format(hours, minutes, seconds)
 }
 

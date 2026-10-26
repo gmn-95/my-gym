@@ -1,10 +1,21 @@
 package com.gmn95.mygym.data.local
 
 import androidx.room.Dao
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+
+data class CompletedWorkoutSessionSummaryRow(
+    @Embedded
+    val session: WorkoutSessionEntity,
+    @ColumnInfo(name = "exercise_count")
+    val exerciseCount: Int,
+    @ColumnInfo(name = "completed_exercise_count")
+    val completedExerciseCount: Int,
+)
 
 @Dao
 interface WorkoutSessionDao {
@@ -30,6 +41,25 @@ interface WorkoutSessionDao {
 
     @Query("SELECT * FROM workout_sessions WHERE id = :id")
     suspend fun getById(id: String): WorkoutSessionEntity?
+
+    @Query(
+        """
+        SELECT
+            workout_sessions.*,
+            COUNT(session_exercises.id) AS exercise_count,
+            COALESCE(
+                SUM(CASE WHEN session_exercises.is_completed THEN 1 ELSE 0 END),
+                0
+            ) AS completed_exercise_count
+        FROM workout_sessions
+        LEFT JOIN session_exercises
+            ON session_exercises.session_id = workout_sessions.id
+        WHERE workout_sessions.status = 'COMPLETED'
+        GROUP BY workout_sessions.id
+        ORDER BY workout_sessions.ended_at_epoch_millis DESC
+        """,
+    )
+    fun observeCompletedSummaries(): Flow<List<CompletedWorkoutSessionSummaryRow>>
 
     @Insert
     suspend fun insert(session: WorkoutSessionEntity)

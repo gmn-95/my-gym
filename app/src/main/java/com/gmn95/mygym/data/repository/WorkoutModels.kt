@@ -6,6 +6,7 @@ data class WorkoutSummary(
     val id: String,
     val name: String,
     val exerciseCount: Int,
+    val averageDurationMillis: Long?,
 )
 
 data class Workout(

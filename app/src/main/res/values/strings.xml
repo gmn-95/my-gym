@@ -11,6 +11,12 @@
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="no_history">No history</string>
+    <string name="average_duration">Average: %1$s</string>
+    <string name="history">History</string>
+    <string name="no_completed_workouts_title">No completed workouts yet</string>
+    <string name="no_completed_workouts_description">Completed workouts will appear here.</string>
+    <string name="history_duration">Active duration: %1$s</string>
+    <string name="history_exercise_progress">%1$d of %2$d exercises completed</string>
     <string name="duplicate">Duplicate</string>
     <string name="open">Open</string>
     <string name="no_workouts_title">No workouts yet</string>
@@ -81,7 +87,7 @@
     <string name="cancel_workout">Cancel workout</string>
     <string name="finish_workout">Finish workout</string>
     <string name="finish_workout_title">Finish this workout?</string>
-    <string name="finish_workout_message">The session and its exercise completion states will be saved for the future history screen.</string>
+    <string name="finish_workout_message">The session and its exercise completion states will be saved in history.</string>
     <string name="finish">Finish</string>
     <string name="keep_training">Keep training</string>
     <string name="cancel_workout_title">Cancel this workout?</string>

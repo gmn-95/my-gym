@@ -71,6 +71,21 @@ class RoomSessionRepository(
             }
         }
 
+    override fun observeCompletedSessions(): Flow<List<CompletedWorkoutSessionSummary>> =
+        sessionDao.observeCompletedSummaries().map { rows ->
+            rows.map { row ->
+                CompletedWorkoutSessionSummary(
+                    id = row.session.id,
+                    workoutName = row.session.workoutNameSnapshot,
+                    endedAtEpochMillis = row.session.endedAtEpochMillis
+                        ?: row.session.startedAtEpochMillis,
+                    activeDurationMillis = row.session.activeAccumulatedMillis,
+                    exerciseCount = row.exerciseCount,
+                    completedExerciseCount = row.completedExerciseCount,
+                )
+            }
+        }
+
     override suspend fun startSession(workoutGroupId: String): String =
         database.withTransaction {
             if (sessionDao.getActive() != null) {

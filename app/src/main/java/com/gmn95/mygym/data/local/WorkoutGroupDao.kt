@@ -13,16 +13,25 @@ data class WorkoutGroupSummaryRow(
     val group: WorkoutGroupEntity,
     @ColumnInfo(name = "exercise_count")
     val exerciseCount: Int,
+    @ColumnInfo(name = "average_duration_millis")
+    val averageDurationMillis: Long?,
 )
 
 @Dao
 interface WorkoutGroupDao {
     @Query(
         """
-        SELECT workout_groups.*, COUNT(workout_items.id) AS exercise_count
+        SELECT
+            workout_groups.*,
+            COUNT(DISTINCT workout_items.id) AS exercise_count,
+            CAST(AVG(workout_sessions.active_accumulated_millis) AS INTEGER)
+                AS average_duration_millis
         FROM workout_groups
         LEFT JOIN workout_items
             ON workout_items.workout_group_id = workout_groups.id
+        LEFT JOIN workout_sessions
+            ON workout_sessions.workout_group_id = workout_groups.id
+            AND workout_sessions.status = 'COMPLETED'
         GROUP BY workout_groups.id
         ORDER BY workout_groups.position, workout_groups.created_at_epoch_millis
         """,

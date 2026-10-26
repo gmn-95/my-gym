@@ -29,6 +29,7 @@ class RoomWorkoutRepository(
                     id = row.group.id,
                     name = row.group.name,
                     exerciseCount = row.exerciseCount,
+                    averageDurationMillis = row.averageDurationMillis,
                 )
             }
         }

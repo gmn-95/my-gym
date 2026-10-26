@@ -11,6 +11,12 @@
     <string name="delete">Excluir</string>
     <string name="cancel">Cancelar</string>
     <string name="no_history">Sem histórico</string>
+    <string name="average_duration">Média: %1$s</string>
+    <string name="history">Histórico</string>
+    <string name="no_completed_workouts_title">Ainda não há treinos concluídos</string>
+    <string name="no_completed_workouts_description">Os treinos finalizados aparecerão aqui.</string>
+    <string name="history_duration">Duração ativa: %1$s</string>
+    <string name="history_exercise_progress">%1$d de %2$d exercícios concluídos</string>
     <string name="duplicate">Duplicar</string>
     <string name="open">Abrir</string>
     <string name="no_workouts_title">Nenhuma ficha criada</string>
@@ -81,7 +87,7 @@
     <string name="cancel_workout">Cancelar treino</string>
     <string name="finish_workout">Finalizar treino</string>
     <string name="finish_workout_title">Finalizar este treino?</string>
-    <string name="finish_workout_message">A sessão e as marcações dos exercícios serão salvas para a futura tela de histórico.</string>
+    <string name="finish_workout_message">A sessão e as marcações dos exercícios serão salvas no histórico.</string>
     <string name="finish">Finalizar</string>
     <string name="keep_training">Continuar treinando</string>
     <string name="cancel_workout_title">Cancelar este treino?</string>

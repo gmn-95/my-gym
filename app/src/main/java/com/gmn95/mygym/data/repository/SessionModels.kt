@@ -59,3 +59,12 @@ data class ActiveSessionSummary(
     val workoutName: String,
     val status: WorkoutSessionStatus,
 )
+
+data class CompletedWorkoutSessionSummary(
+    val id: String,
+    val workoutName: String,
+    val endedAtEpochMillis: Long,
+    val activeDurationMillis: Long,
+    val exerciseCount: Int,
+    val completedExerciseCount: Int,
+)

@@ -5,7 +5,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.gmn95.mygym.data.local.MyGymDatabase
+import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
+import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -74,5 +76,53 @@ class RoomWorkoutRepositoryTest {
 
         repository.deleteWorkout(workoutId)
         assertEquals(listOf(duplicateId), repository.observeWorkouts().first().map { it.id })
+    }
+
+    @Test
+    fun workoutSummaryUsesOnlyCompletedSessionsForAverageDuration() = runBlocking {
+        val workoutId = repository.createWorkout("A — Superiores")
+        database.workoutSessionDao().insert(
+            WorkoutSessionEntity(
+                id = "completed-one",
+                workoutGroupId = workoutId,
+                workoutNameSnapshot = "A — Superiores",
+                status = WorkoutSessionStatus.COMPLETED.name,
+                startedAtEpochMillis = 1_000L,
+                endedAtEpochMillis = 61_000L,
+                activeAccumulatedMillis = 60_000L,
+                activeAnchorElapsedRealtime = null,
+                activeAnchorBootCount = null,
+            ),
+        )
+        database.workoutSessionDao().insert(
+            WorkoutSessionEntity(
+                id = "completed-two",
+                workoutGroupId = workoutId,
+                workoutNameSnapshot = "A — Superiores",
+                status = WorkoutSessionStatus.COMPLETED.name,
+                startedAtEpochMillis = 100_000L,
+                endedAtEpochMillis = 220_000L,
+                activeAccumulatedMillis = 120_000L,
+                activeAnchorElapsedRealtime = null,
+                activeAnchorBootCount = null,
+            ),
+        )
+        database.workoutSessionDao().insert(
+            WorkoutSessionEntity(
+                id = "cancelled",
+                workoutGroupId = workoutId,
+                workoutNameSnapshot = "A — Superiores",
+                status = WorkoutSessionStatus.CANCELLED.name,
+                startedAtEpochMillis = 300_000L,
+                endedAtEpochMillis = 600_000L,
+                activeAccumulatedMillis = 300_000L,
+                activeAnchorElapsedRealtime = null,
+                activeAnchorBootCount = null,
+            ),
+        )
+
+        val summary = repository.observeWorkouts().first().single()
+
+        assertEquals(90_000L, summary.averageDurationMillis)
     }
 }

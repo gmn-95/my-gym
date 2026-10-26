@@ -13,6 +13,8 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Séries, repetições fixas ou em faixa e descanso em minutos/segundos.
 - Reordenação e remoção dos exercícios de uma ficha.
 - Sessão com snapshot da ficha, conclusão individual de cada série e apenas um treino ativo por vez.
+- Duração média real de cada ficha, baseada apenas em sessões concluídas.
+- Lista de histórico local de sessões concluídas, com duração e exercícios concluídos.
 - Cronômetro de tempo ativo com pausa explícita.
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
@@ -20,7 +22,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Versão atual: `versionCode 4` / `versionName 0.4.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Calendário/histórico, backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões já são persistidas para alimentar o histórico na próxima etapa.
+Calendário mensal e detalhes de uma sessão individual, backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões persistidas alimentam a lista de histórico e a duração média das fichas.
 
 ## Uso atual
 
@@ -31,8 +33,10 @@ Calendário/histórico, backup JSON e integração com a ExerciseDB ainda não f
 5. Use **Subir** e **Descer** para alterar a ordem dos exercícios.
 6. Na tela inicial, uma ficha pode ser aberta, duplicada ou excluída. A exclusão sempre exige confirmação.
 7. Use **Iniciar treino** para criar uma sessão baseada em um snapshot da ficha.
-8. Durante o treino, marque cada série individualmente. Ao marcar uma série, o descanso configurado para o exercício começa automaticamente.
-9. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
+8. Durante o treino, use **Mostrar séries** para abrir os detalhes de um exercício. Ao marcar uma série, o descanso configurado começa automaticamente; também é possível marcar ou desmarcar todas as séries pelo controle **Exercício concluído**.
+9. Após concluir treinos, a tela inicial passa a mostrar a duração média ativa de cada ficha. Sessões canceladas não entram nesse cálculo.
+10. Use **Histórico** na tela inicial para consultar as sessões concluídas, mesmo que a ficha original tenha sido excluída.
+11. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
 
 ## Comportamento dos cronômetros
 
