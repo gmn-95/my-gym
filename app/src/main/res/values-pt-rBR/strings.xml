@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">my-gym</string>
+    <string name="home_title">Seus treinos em um só lugar</string>
+    <string name="home_description">Suas fichas de treino aparecerão aqui.</string>
+    <string name="stage_label">Estrutura inicial pronta</string>
+</resources>

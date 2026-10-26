@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">my-gym</string>
+    <string name="home_title">Your workouts, in one place</string>
+    <string name="home_description">Your workout plans will appear here.</string>
+    <string name="stage_label">Initial structure ready</string>
+</resources>

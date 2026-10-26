@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+**/build/
+
+# Configuração local do Android SDK
+local.properties
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Arquivos gerados pelo Android
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Assinatura: nunca versionar chaves ou credenciais
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
