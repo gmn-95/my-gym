@@ -14,7 +14,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Reordenação e remoção dos exercícios de uma ficha.
 - Sessão com snapshot da ficha, conclusão individual de cada série e apenas um treino ativo por vez.
 - Duração média real de cada ficha, baseada apenas em sessões concluídas.
-- Lista e detalhe local de sessões concluídas, com duração e exercícios concluídos.
+- Calendário mensal, lista e detalhe local de sessões concluídas, com duração e exercícios concluídos.
 - Cronômetro de tempo ativo com pausa explícita.
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
@@ -22,7 +22,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Versão atual: `versionCode 4` / `versionName 0.4.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Calendário mensal, backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões persistidas alimentam a lista de histórico e a duração média das fichas.
+Backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média das fichas.
 
 ## Uso atual
 
@@ -36,7 +36,8 @@ Calendário mensal, backup JSON e integração com a ExerciseDB ainda não fazem
 8. Durante o treino, use **Mostrar séries** para abrir os detalhes de um exercício. Ao marcar uma série, o descanso configurado começa automaticamente; também é possível marcar ou desmarcar todas as séries pelo controle **Exercício concluído**.
 9. Após concluir treinos, a tela inicial passa a mostrar a duração média ativa de cada ficha. Sessões canceladas não entram nesse cálculo.
 10. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que a ficha original tenha sido excluída.
-11. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
+11. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
+12. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
 
 ## Comportamento dos cronômetros
 

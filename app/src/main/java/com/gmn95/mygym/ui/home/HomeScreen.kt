@@ -46,6 +46,7 @@ fun HomeScreen(
     onCreateWorkout: (String) -> Unit,
     onOpenWorkout: (String) -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenCalendar: () -> Unit,
     onDuplicateWorkout: (String, String) -> Unit,
     onDeleteWorkout: (String) -> Unit,
     onStartWorkout: (String) -> Unit,
@@ -102,6 +103,9 @@ fun HomeScreen(
                 )
                 TextButton(onClick = onOpenHistory) {
                     Text(stringResource(R.string.history))
+                }
+                TextButton(onClick = onOpenCalendar) {
+                    Text(stringResource(R.string.calendar))
                 }
             }
             Text(

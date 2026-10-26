@@ -8,14 +8,28 @@ import androidx.compose.runtime.Composable
 
 private val LightColorScheme = lightColorScheme(
     primary = GymGreen,
+    onPrimary = GymLightBackground,
+    primaryContainer = GymLightPrimaryContainer,
+    onPrimaryContainer = GymLightOnPrimaryContainer,
     background = GymLightBackground,
+    onBackground = GymLightOnBackground,
     surface = GymLightBackground,
+    onSurface = GymLightOnBackground,
+    surfaceVariant = GymLightSurfaceVariant,
+    onSurfaceVariant = GymLightOnSurfaceVariant,
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = GymGreenDark,
+    onPrimary = GymDarkBackground,
+    primaryContainer = GymDarkPrimaryContainer,
+    onPrimaryContainer = GymDarkOnPrimaryContainer,
     background = GymDarkBackground,
+    onBackground = GymDarkOnBackground,
     surface = GymDarkBackground,
+    onSurface = GymDarkOnBackground,
+    surfaceVariant = GymDarkSurfaceVariant,
+    onSurfaceVariant = GymDarkOnSurfaceVariant,
 )
 
 @Composable

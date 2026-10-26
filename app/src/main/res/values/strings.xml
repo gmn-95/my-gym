@@ -13,6 +13,10 @@
     <string name="no_history">No history</string>
     <string name="average_duration">Average: %1$s</string>
     <string name="history">History</string>
+    <string name="calendar">Calendar</string>
+    <string name="previous_month">Previous</string>
+    <string name="next_month">Next</string>
+    <string name="select_training_day">Select a highlighted day to see its workouts.</string>
     <string name="no_completed_workouts_title">No completed workouts yet</string>
     <string name="no_completed_workouts_description">Completed workouts will appear here.</string>
     <string name="history_duration">Active duration: %1$s</string>
@@ -22,7 +26,6 @@
     <string name="history_exercise_completed">Completed</string>
     <string name="history_exercise_not_completed">Not completed</string>
     <string name="duplicate">Duplicate</string>
-    <string name="open">Open</string>
     <string name="no_workouts_title">No workouts yet</string>
     <string name="no_workouts_description">Use “New workout” to create your first plan.</string>
     <string name="workout_copy_name">%1$s (copy)</string>
