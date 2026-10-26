@@ -106,6 +106,10 @@ class RoomSessionRepositoryTest {
         assertEquals(1, history.size)
         assertEquals("A — Superiores", history.single().workoutName)
         assertEquals(1, history.single().completedExerciseCount)
+        val details = sessionRepository.observeCompletedSession(sessionId).first()!!
+        assertEquals("A — Superiores", details.workoutName)
+        assertEquals(listOf("Supino"), details.exercises.map { it.name })
+        assertEquals(true, details.exercises.single().isCompleted)
     }
 
     @Test

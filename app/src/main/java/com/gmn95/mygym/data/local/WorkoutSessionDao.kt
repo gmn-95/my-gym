@@ -61,6 +61,11 @@ interface WorkoutSessionDao {
     )
     fun observeCompletedSummaries(): Flow<List<CompletedWorkoutSessionSummaryRow>>
 
+    @Query(
+        "SELECT * FROM workout_sessions WHERE id = :id AND status = 'COMPLETED'",
+    )
+    fun observeCompletedById(id: String): Flow<WorkoutSessionEntity?>
+
     @Insert
     suspend fun insert(session: WorkoutSessionEntity)
 

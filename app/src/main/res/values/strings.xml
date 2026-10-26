@@ -17,6 +17,10 @@
     <string name="no_completed_workouts_description">Completed workouts will appear here.</string>
     <string name="history_duration">Active duration: %1$s</string>
     <string name="history_exercise_progress">%1$d of %2$d exercises completed</string>
+    <string name="history_session_not_found">This completed workout is no longer available.</string>
+    <string name="history_exercises">Exercises</string>
+    <string name="history_exercise_completed">Completed</string>
+    <string name="history_exercise_not_completed">Not completed</string>
     <string name="duplicate">Duplicate</string>
     <string name="open">Open</string>
     <string name="no_workouts_title">No workouts yet</string>

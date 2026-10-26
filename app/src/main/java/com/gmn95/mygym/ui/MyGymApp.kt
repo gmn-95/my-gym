@@ -12,9 +12,11 @@ import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
 import com.gmn95.mygym.feature.history.HistoryViewModel
+import com.gmn95.mygym.feature.history.HistoryDetailViewModel
 import com.gmn95.mygym.feature.session.SessionViewModel
 import com.gmn95.mygym.ui.editor.WorkoutEditorScreen
 import com.gmn95.mygym.ui.history.HistoryScreen
+import com.gmn95.mygym.ui.history.HistoryDetailScreen
 import com.gmn95.mygym.ui.home.HomeScreen
 import com.gmn95.mygym.ui.session.SessionScreen
 import com.gmn95.mygym.ui.theme.MyGymTheme
@@ -26,6 +28,7 @@ fun MyGymApp() {
         var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
         var showActiveSession by rememberSaveable { mutableStateOf(false) }
         var showHistory by rememberSaveable { mutableStateOf(false) }
+        var selectedHistorySessionId by rememberSaveable { mutableStateOf<String?>(null) }
 
         val workoutId = selectedWorkoutId
         when {
@@ -62,6 +65,22 @@ fun MyGymApp() {
                 )
             }
 
+            selectedHistorySessionId != null -> {
+                val sessionId = requireNotNull(selectedHistorySessionId)
+                val historyDetailViewModel: HistoryDetailViewModel = viewModel(
+                    key = "history-session-$sessionId",
+                    factory = HistoryDetailViewModel.factory(
+                        sessionId = sessionId,
+                        sessionRepository = application.sessionRepository,
+                    ),
+                )
+                val uiState by historyDetailViewModel.uiState.collectAsStateWithLifecycle()
+                HistoryDetailScreen(
+                    uiState = uiState,
+                    onBack = { selectedHistorySessionId = null },
+                )
+            }
+
             showHistory -> {
                 val historyViewModel: HistoryViewModel = viewModel(
                     factory = HistoryViewModel.factory(application.sessionRepository),
@@ -70,6 +89,7 @@ fun MyGymApp() {
                 HistoryScreen(
                     uiState = uiState,
                     onBack = { showHistory = false },
+                    onOpenSession = { selectedHistorySessionId = it },
                 )
             }
 

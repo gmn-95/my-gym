@@ -1,6 +1,7 @@
 package com.gmn95.mygym.ui.history
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import java.util.Date
 fun HistoryScreen(
     uiState: HistoryUiState,
     onBack: () -> Unit,
+    onOpenSession: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = onBack)
@@ -80,15 +82,25 @@ fun HistoryScreen(
                 )
             }
             items(uiState.sessions, key = CompletedWorkoutSessionSummary::id) { session ->
-                CompletedSessionCard(session)
+                CompletedSessionCard(
+                    session = session,
+                    onClick = { onOpenSession(session.id) },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun CompletedSessionCard(session: CompletedWorkoutSessionSummary) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun CompletedSessionCard(
+    session: CompletedWorkoutSessionSummary,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(session.workoutName, style = MaterialTheme.typography.titleMedium)
             Text(
@@ -119,7 +131,7 @@ private fun CompletedSessionCard(session: CompletedWorkoutSessionSummary) {
     }
 }
 
-private fun formatDuration(durationMillis: Long): String {
+internal fun formatDuration(durationMillis: Long): String {
     val totalSeconds = durationMillis.coerceAtLeast(0) / 1_000
     val hours = totalSeconds / 3_600
     val minutes = totalSeconds % 3_600 / 60

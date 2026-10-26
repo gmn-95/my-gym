@@ -68,3 +68,22 @@ data class CompletedWorkoutSessionSummary(
     val exerciseCount: Int,
     val completedExerciseCount: Int,
 )
+
+data class CompletedWorkoutSession(
+    val id: String,
+    val workoutName: String,
+    val endedAtEpochMillis: Long,
+    val activeDurationMillis: Long,
+    val exercises: List<CompletedSessionExercise>,
+)
+
+data class CompletedSessionExercise(
+    val position: Int,
+    val name: String,
+    val notes: String?,
+    val sets: Int,
+    val repetitionsMin: Int,
+    val repetitionsMax: Int?,
+    val restSeconds: Int,
+    val isCompleted: Boolean,
+)

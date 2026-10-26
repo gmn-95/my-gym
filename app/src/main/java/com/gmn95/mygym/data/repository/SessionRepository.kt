@@ -9,6 +9,8 @@ interface SessionRepository {
 
     fun observeCompletedSessions(): Flow<List<CompletedWorkoutSessionSummary>>
 
+    fun observeCompletedSession(id: String): Flow<CompletedWorkoutSession?>
+
     suspend fun startSession(workoutGroupId: String): String
 
     suspend fun completeActiveAndStartSession(workoutGroupId: String): String

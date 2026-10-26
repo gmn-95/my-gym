@@ -86,6 +86,33 @@ class RoomSessionRepository(
             }
         }
 
+    override fun observeCompletedSession(id: String): Flow<CompletedWorkoutSession?> =
+        combine(
+            sessionDao.observeCompletedById(id),
+            sessionExerciseDao.observeBySession(id),
+        ) { session, exercises ->
+            session?.let {
+                CompletedWorkoutSession(
+                    id = it.id,
+                    workoutName = it.workoutNameSnapshot,
+                    endedAtEpochMillis = it.endedAtEpochMillis ?: it.startedAtEpochMillis,
+                    activeDurationMillis = it.activeAccumulatedMillis,
+                    exercises = exercises.map { exercise ->
+                        CompletedSessionExercise(
+                            position = exercise.position,
+                            name = exercise.exerciseNameSnapshot,
+                            notes = exercise.exerciseNotesSnapshot,
+                            sets = exercise.sets,
+                            repetitionsMin = exercise.repetitionsMin,
+                            repetitionsMax = exercise.repetitionsMax,
+                            restSeconds = exercise.restSeconds,
+                            isCompleted = exercise.isCompleted,
+                        )
+                    },
+                )
+            }
+        }
+
     override suspend fun startSession(workoutGroupId: String): String =
         database.withTransaction {
             if (sessionDao.getActive() != null) {
