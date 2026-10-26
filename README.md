@@ -1,6 +1,6 @@
 # my-gym
 
-Aplicativo Android nativo e offline-first para organizar e executar fichas de musculação. O projeto está na etapa inicial: possui a estrutura Gradle, uma tela Compose simples e o banco Room preparado para evoluir com migrações explícitas.
+Aplicativo Android nativo e offline-first para organizar fichas de musculação e executar sessões com cronômetros persistentes.
 
 ## Estado atual
 
@@ -8,10 +8,39 @@ Aplicativo Android nativo e offline-first para organizar e executar fichas de mu
 - Tema claro ou escuro seguindo o sistema.
 - Textos iniciais em português brasileiro e inglês.
 - Room/SQLite com exportação do esquema habilitada.
+- Criação, edição, duplicação e exclusão confirmada de fichas.
+- Exercícios manuais reutilizáveis em diferentes fichas.
+- Séries, repetições fixas ou em faixa e descanso em minutos/segundos.
+- Reordenação e remoção dos exercícios de uma ficha.
+- Sessão com snapshot da ficha, marcação dos exercícios e apenas um treino ativo por vez.
+- Cronômetro de tempo ativo com pausa explícita.
+- Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
+- Recuperação da sessão após recriação da tela ou encerramento do processo.
 - `applicationId` definitivo: `com.gmn95.mygym`.
+- Versão atual: `versionCode 3` / `versionName 0.3.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Criação de fichas, execução de sessões, histórico, backup e integração com a ExerciseDB ainda não fazem parte desta etapa.
+Calendário/histórico, backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões já são persistidas para alimentar o histórico na próxima etapa.
+
+## Uso atual
+
+1. Na tela **Meus treinos**, use **Nova ficha** e informe um nome.
+2. Abra a ficha e use **Adicionar exercício**.
+3. Crie um exercício manual com nome e observações opcionais, ou reutilize um exercício já cadastrado.
+4. Use **Editar** para definir séries, repetições e descanso.
+5. Use **Subir** e **Descer** para alterar a ordem dos exercícios.
+6. Na tela inicial, uma ficha pode ser aberta, duplicada ou excluída. A exclusão sempre exige confirmação.
+7. Use **Iniciar treino** para criar uma sessão baseada em um snapshot da ficha.
+8. Durante o treino, marque exercícios, controle descansos e pause ou retome o tempo ativo.
+9. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
+
+## Comportamento dos cronômetros
+
+- Bloquear a tela ou trocar de aplicativo não pausa a sessão nem o descanso.
+- Os tempos são calculados com o relógio monotônico do Android; não dependem de um contador que precisa permanecer visível.
+- Ao colocar o app em segundo plano, os valores são checkpointados no Room sem pausar os cronômetros.
+- Se o aparelho for reiniciado, uma sessão e um descanso que estavam ativos são recuperados pausados no último checkpoint. O período com o aparelho desligado não é contado.
+- O cronômetro de descanso é independente da pausa da sessão.
 
 ## Pré-requisitos no Ubuntu/Linux
 
@@ -68,13 +97,18 @@ Os comandos previstos para a etapa inicial são:
 ./gradlew testDebugUnitTest
 ./gradlew lintDebug
 ./gradlew assembleDebug
+./gradlew assembleDebugAndroidTest
 ```
 
-Testes de banco, migração e interface serão acrescentados juntamente com as regras que eles validam.
+Os testes unitários validam as configurações dos exercícios e os cálculos monotônicos dos cronômetros. Os testes instrumentados validam as migrações Room, os snapshots e os fluxos transacionais de fichas, sessões, pausas, descansos e recuperação após reinicialização. Para executá-los, inicie um emulador ou conecte um celular e use:
+
+```bash
+./gradlew connectedDebugAndroidTest
+```
 
 ## Persistência e futuras atualizações
 
-O banco `my-gym.db` começa na versão 1. Os esquemas gerados pelo Room ficam em `app/schemas/` e devem ser versionados. Toda mudança futura do esquema deverá:
+O banco `my-gym.db` está na versão 3. A migração `1 → 2` cria fichas e exercícios; a migração `2 → 3` cria sessões, snapshots e o estado do descanso. Ambas preservam os dados anteriores. Os esquemas gerados pelo Room ficam em `app/schemas/` e são versionados. Toda mudança futura do esquema deverá:
 
 1. aumentar a versão do banco;
 2. fornecer uma migração Room explícita;
@@ -87,9 +121,12 @@ Não será usado `fallbackToDestructiveMigration()` em builds do aplicativo. O `
 
 ```text
 app/src/main/java/com/gmn95/mygym/
-├── data/local/    banco Room, entidades e DAOs
-├── ui/            raiz da interface Compose
-└── ui/theme/      cores e tema Material 3
+├── data/local/       banco Room, entidades, DAOs e migrações
+├── data/repository/  contrato e implementação transacional dos dados
+├── domain/           validações puras das configurações
+├── feature/          ViewModels e estados de tela
+├── ui/               telas e raiz da interface Compose
+└── ui/theme/         cores e tema Material 3
 ```
 
 As decisões e convenções obrigatórias para as próximas etapas estão em `AGENTS.md`. A especificação completa está em `SPEC.md`.

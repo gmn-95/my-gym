@@ -1,77 +1,118 @@
 package com.gmn95.mygym.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.gmn95.mygym.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gmn95.mygym.MyGymApplication
+import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
+import com.gmn95.mygym.feature.home.HomeViewModel
+import com.gmn95.mygym.feature.session.SessionViewModel
+import com.gmn95.mygym.ui.editor.WorkoutEditorScreen
+import com.gmn95.mygym.ui.home.HomeScreen
+import com.gmn95.mygym.ui.session.SessionScreen
 import com.gmn95.mygym.ui.theme.MyGymTheme
 
 @Composable
 fun MyGymApp() {
     MyGymTheme {
-        HomeScreen()
-    }
-}
+        val application = LocalContext.current.applicationContext as MyGymApplication
+        var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
+        var showActiveSession by rememberSaveable { mutableStateOf(false) }
 
-@Composable
-private fun HomeScreen() {
-    Scaffold { innerPadding ->
-        HomeContent(
-            contentPadding = innerPadding,
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
-}
+        val workoutId = selectedWorkoutId
+        when {
+            showActiveSession -> {
+                val sessionViewModel: SessionViewModel = viewModel(
+                    factory = SessionViewModel.factory(
+                        repository = application.sessionRepository,
+                        clock = application.sessionClock,
+                    ),
+                )
+                val uiState by sessionViewModel.uiState.collectAsStateWithLifecycle()
+                SessionScreen(
+                    uiState = uiState,
+                    onBack = { showActiveSession = false },
+                    onPauseSession = sessionViewModel::pauseSession,
+                    onResumeSession = sessionViewModel::resumeSession,
+                    onSetExerciseCompleted = sessionViewModel::setExerciseCompleted,
+                    onStartRest = sessionViewModel::startRest,
+                    onPauseRest = sessionViewModel::pauseRest,
+                    onResumeRest = sessionViewModel::resumeRest,
+                    onResetRest = sessionViewModel::resetRest,
+                    onEndRest = sessionViewModel::endRest,
+                    onCompleteSession = {
+                        sessionViewModel.completeSession {
+                            showActiveSession = false
+                        }
+                    },
+                    onCancelSession = {
+                        sessionViewModel.cancelSession {
+                            showActiveSession = false
+                        }
+                    },
+                    onOperationErrorShown = sessionViewModel::clearOperationError,
+                )
+            }
 
-@Composable
-private fun HomeContent(
-    contentPadding: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .padding(contentPadding)
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.home_title),
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = stringResource(R.string.home_description),
-            modifier = Modifier.padding(top = 12.dp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = stringResource(R.string.stage_label),
-            modifier = Modifier.padding(top = 24.dp),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.labelLarge,
-        )
-    }
-}
+            workoutId == null -> {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModel.factory(
+                    workoutRepository = application.workoutRepository,
+                    sessionRepository = application.sessionRepository,
+                ),
+            )
+            val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+            HomeScreen(
+                uiState = uiState,
+                onCreateWorkout = { name ->
+                    homeViewModel.createWorkout(name) { createdId ->
+                        selectedWorkoutId = createdId
+                    }
+                },
+                onOpenWorkout = { selectedWorkoutId = it },
+                onDuplicateWorkout = homeViewModel::duplicateWorkout,
+                onDeleteWorkout = homeViewModel::deleteWorkout,
+                onStartWorkout = { id ->
+                    homeViewModel.startWorkout(id) {
+                        showActiveSession = true
+                    }
+                },
+                onResumeActiveSession = { showActiveSession = true },
+                onFinishActiveAndStart = { id ->
+                    homeViewModel.finishActiveAndStart(id) {
+                        showActiveSession = true
+                    }
+                },
+                onMessageShown = homeViewModel::clearMessage,
+            )
+            }
 
-@Preview(showBackground = true)
-@Composable
-private fun HomeScreenPreview() {
-    MyGymTheme {
-        HomeContent(contentPadding = PaddingValues())
+            else -> {
+            val editorViewModel: WorkoutEditorViewModel = viewModel(
+                key = "workout-editor-$workoutId",
+                factory = WorkoutEditorViewModel.factory(
+                    workoutId = workoutId,
+                    repository = application.workoutRepository,
+                ),
+            )
+            val uiState by editorViewModel.uiState.collectAsStateWithLifecycle()
+            WorkoutEditorScreen(
+                uiState = uiState,
+                onBack = { selectedWorkoutId = null },
+                onRenameWorkout = editorViewModel::renameWorkout,
+                onCreateAndAddExercise = editorViewModel::createAndAddExercise,
+                onAddExistingExercise = editorViewModel::addExistingExercise,
+                onUpdateExercise = editorViewModel::updateExercise,
+                onRemoveExercise = editorViewModel::removeExercise,
+                onMoveExercise = editorViewModel::moveExercise,
+                onOperationErrorShown = editorViewModel::clearOperationError,
+            )
+            }
+        }
     }
 }

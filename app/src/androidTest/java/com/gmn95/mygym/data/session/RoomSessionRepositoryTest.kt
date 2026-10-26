@@ -1,0 +1,140 @@
+package com.gmn95.mygym.data.session
+
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.gmn95.mygym.data.local.MyGymDatabase
+import com.gmn95.mygym.data.repository.RestTimerStatus
+import com.gmn95.mygym.data.repository.RoomSessionRepository
+import com.gmn95.mygym.data.repository.RoomWorkoutRepository
+import com.gmn95.mygym.data.repository.WorkoutSessionStatus
+import com.gmn95.mygym.domain.session.SessionClock
+import com.gmn95.mygym.domain.session.TimerMath
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class RoomSessionRepositoryTest {
+    private lateinit var database: MyGymDatabase
+    private lateinit var workoutRepository: RoomWorkoutRepository
+    private lateinit var sessionRepository: RoomSessionRepository
+    private val clock = FakeSessionClock()
+    private var nextId = 0
+
+    @Before
+    fun createDatabase() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        database = Room.inMemoryDatabaseBuilder(context, MyGymDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        val idFactory = { "id-${nextId++}" }
+        workoutRepository = RoomWorkoutRepository(
+            database = database,
+            idFactory = idFactory,
+            currentTimeMillis = clock::epochMillis,
+        )
+        sessionRepository = RoomSessionRepository(
+            database = database,
+            clock = clock,
+            idFactory = idFactory,
+        )
+    }
+
+    @After
+    fun closeDatabase() {
+        database.close()
+    }
+
+    @Test
+    fun sessionUsesSnapshotAndKeepsActiveTimeWhenWorkoutIsDeleted() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("A — Superiores")
+        workoutRepository.createAndAddExercise(workoutId, "Supino", "Com barra")
+        val sessionId = sessionRepository.startSession(workoutId)
+
+        clock.advance(5_000)
+        sessionRepository.pauseSession()
+        workoutRepository.renameWorkout(workoutId, "Nome alterado")
+        workoutRepository.deleteWorkout(workoutId)
+
+        val active = sessionRepository.observeActiveSession().first()!!
+        assertEquals("A — Superiores", active.workoutName)
+        assertEquals("Supino", active.exercises.single().name)
+        assertEquals(5_000, active.activeAccumulatedMillis)
+
+        sessionRepository.setExerciseCompleted(active.exercises.single().id, true)
+        sessionRepository.resumeSession()
+        clock.advance(2_000)
+        sessionRepository.completeActiveSession()
+
+        assertNull(sessionRepository.observeActiveSession().first())
+        val stored = database.workoutSessionDao().getById(sessionId)!!
+        assertEquals(WorkoutSessionStatus.COMPLETED.name, stored.status)
+        assertEquals(7_000, stored.activeAccumulatedMillis)
+    }
+
+    @Test
+    fun restTimerPausesResumesAndRecoversPausedAfterReboot() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("B — Inferiores")
+        workoutRepository.createAndAddExercise(workoutId, "Agachamento", null)
+        sessionRepository.startSession(workoutId)
+        val exerciseId = sessionRepository.observeActiveSession().first()!!.exercises.single().id
+
+        sessionRepository.startRest(exerciseId)
+        clock.advance(10_000)
+        sessionRepository.pauseRest()
+        var timer = sessionRepository.observeActiveSession().first()!!.restTimer!!
+        assertEquals(RestTimerStatus.PAUSED, timer.status)
+        assertEquals(50_000, timer.remainingAtAnchorMillis)
+
+        sessionRepository.resumeRest()
+        clock.advance(5_000)
+        sessionRepository.checkpointActiveTimers()
+        clock.reboot()
+        sessionRepository.recoverAfterRebootIfNeeded()
+
+        val active = sessionRepository.observeActiveSession().first()!!
+        assertEquals(WorkoutSessionStatus.PAUSED, active.status)
+        timer = active.restTimer!!
+        assertEquals(RestTimerStatus.PAUSED, timer.status)
+        assertEquals(
+            45_000,
+            TimerMath.remainingMillis(
+                timer.remainingAtAnchorMillis,
+                timer.anchorElapsedRealtime,
+                timer.anchorBootCount,
+                clock.elapsedRealtimeMillis(),
+                clock.bootCount(),
+            ),
+        )
+    }
+
+    private class FakeSessionClock : SessionClock {
+        private var epoch = 1_000_000L
+        private var elapsed = 10_000L
+        private var boot = 1
+
+        override fun epochMillis(): Long = epoch
+
+        override fun elapsedRealtimeMillis(): Long = elapsed
+
+        override fun bootCount(): Int = boot
+
+        fun advance(millis: Long) {
+            epoch += millis
+            elapsed += millis
+        }
+
+        fun reboot() {
+            epoch += 30_000
+            elapsed = 100
+            boot += 1
+        }
+    }
+}
