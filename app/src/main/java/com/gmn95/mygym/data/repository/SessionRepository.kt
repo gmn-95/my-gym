@@ -21,6 +21,8 @@ interface SessionRepository {
         isCompleted: Boolean,
     )
 
+    suspend fun setExerciseCompleted(sessionExerciseId: String, isCompleted: Boolean)
+
     suspend fun pauseRest()
 
     suspend fun resumeRest()

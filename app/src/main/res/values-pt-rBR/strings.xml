@@ -22,7 +22,6 @@
     <string name="exercises">Exercícios</string>
     <string name="add_exercise">Adicionar exercício</string>
     <string name="no_exercises_description">Esta ficha ainda não tem exercícios. Adicione um exercício manual para começar.</string>
-    <string name="workout_editor_footer">A execução de treinos será implementada na próxima etapa de desenvolvimento.</string>
     <string name="workout_not_found">Esta ficha não existe mais.</string>
     <string name="back">Voltar</string>
     <string name="repetition_range">%1$d–%2$d</string>
@@ -74,7 +73,11 @@
     <string name="restart">Reiniciar</string>
     <string name="end_rest">Encerrar</string>
     <string name="series_completion_hint">Ao concluir uma série, o descanso inicia automaticamente.</string>
+    <string name="series_progress">%1$d de %2$d séries concluídas</string>
     <string name="series_number">Série %1$d</string>
+    <string name="exercise_completed">Exercício concluído</string>
+    <string name="expand_sets">Mostrar séries</string>
+    <string name="collapse_sets">Ocultar séries</string>
     <string name="cancel_workout">Cancelar treino</string>
     <string name="finish_workout">Finalizar treino</string>
     <string name="finish_workout_title">Finalizar este treino?</string>

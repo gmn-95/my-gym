@@ -32,6 +32,12 @@ interface SessionExerciseSetDao {
     )
     suspend fun getByExercise(sessionExerciseId: String): List<SessionExerciseSetEntity>
 
+    @Query(
+        "UPDATE session_exercise_sets SET is_completed = :isCompleted " +
+            "WHERE session_exercise_id = :sessionExerciseId",
+    )
+    suspend fun setCompletedForExercise(sessionExerciseId: String, isCompleted: Boolean)
+
     @Insert
     suspend fun insertAll(sets: List<SessionExerciseSetEntity>)
 

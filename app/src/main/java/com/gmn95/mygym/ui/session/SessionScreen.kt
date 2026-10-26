@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -48,6 +49,7 @@ fun SessionScreen(
     onPauseSession: () -> Unit,
     onResumeSession: () -> Unit,
     onSetSeriesCompleted: (String, String, Boolean) -> Unit,
+    onSetExerciseCompleted: (String, Boolean) -> Unit,
     onPauseRest: () -> Unit,
     onResumeRest: () -> Unit,
     onResetRest: () -> Unit,
@@ -166,6 +168,9 @@ fun SessionScreen(
                             exercise = exercise,
                             onSeriesCompletedChange = { setId, completed ->
                                 onSetSeriesCompleted(exercise.id, setId, completed)
+                            },
+                            onExerciseCompletedChange = { completed ->
+                                onSetExerciseCompleted(exercise.id, completed)
                             },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
@@ -353,8 +358,16 @@ private fun RestTimerCard(
 private fun SessionExerciseCard(
     exercise: ActiveSessionExercise,
     onSeriesCompletedChange: (String, Boolean) -> Unit,
+    onExerciseCompletedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var isExpanded by rememberSaveable(exercise.id) { mutableStateOf(false) }
+    val completedSeries = exercise.series.count { it.isCompleted }
+    val seriesProgress = if (exercise.series.isEmpty()) {
+        0f
+    } else {
+        completedSeries.toFloat() / exercise.series.size
+    }
     val repetitions = exercise.repetitionsMax?.let {
         stringResource(R.string.repetition_range, exercise.repetitionsMin, it)
     } ?: exercise.repetitionsMin.toString()
@@ -388,23 +401,72 @@ private fun SessionExerciseCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = stringResource(R.string.series_completion_hint),
-                modifier = Modifier.padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
+                text = stringResource(
+                    R.string.series_progress,
+                    completedSeries,
+                    exercise.series.size,
+                ),
+                modifier = Modifier.padding(top = 12.dp),
+                style = MaterialTheme.typography.labelLarge,
             )
-            exercise.series.forEach { set ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(
-                        checked = set.isCompleted,
-                        onCheckedChange = { completed ->
-                            onSeriesCompletedChange(set.id, completed)
-                        },
+            LinearProgressIndicator(
+                progress = { seriesProgress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp, bottom = 4.dp),
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = exercise.isCompleted,
+                    onCheckedChange = onExerciseCompletedChange,
+                )
+                Text(
+                    text = stringResource(R.string.exercise_completed),
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { isExpanded = !isExpanded }) {
+                    Text(
+                        stringResource(
+                            if (isExpanded) R.string.collapse_sets else R.string.expand_sets,
+                        ),
                     )
-                    Text(stringResource(R.string.series_number, set.position))
+                }
+            }
+            if (isExpanded) {
+                exercise.notes?.let { notes ->
+                    Text(
+                        text = notes,
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.series_completion_hint),
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                exercise.series.forEach { set ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = set.isCompleted,
+                            onCheckedChange = { completed ->
+                                onSeriesCompletedChange(set.id, completed)
+                            },
+                        )
+                        Text(stringResource(R.string.series_number, set.position))
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.gmn95.mygym.data.repository.RestTimerStatus
 import com.gmn95.mygym.data.repository.RoomSessionRepository
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
+import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import com.gmn95.mygym.domain.session.SessionClock
 import com.gmn95.mygym.domain.session.TimerMath
 import kotlinx.coroutines.flow.first
@@ -142,6 +143,58 @@ class RoomSessionRepositoryTest {
                 clock.bootCount(),
             ),
         )
+    }
+
+    @Test
+    fun completedSeriesDoesNotCreateTimerWhenExerciseHasNoRest() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("C — Sem descanso")
+        workoutRepository.createAndAddExercise(
+            workoutId = workoutId,
+            name = "Prancha",
+            notes = null,
+            configuration = WorkoutItemConfiguration(
+                sets = 1,
+                repetitionsMin = 1,
+                repetitionsMax = null,
+                restSeconds = 0,
+            ),
+        )
+        sessionRepository.startSession(workoutId)
+        val exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+
+        sessionRepository.setExerciseSetCompleted(
+            sessionExerciseId = exercise.id,
+            sessionExerciseSetId = exercise.series.single().id,
+            isCompleted = true,
+        )
+
+        val active = sessionRepository.observeActiveSession().first()!!
+        assertNull(active.restTimer)
+        assertEquals(true, active.exercises.single().isCompleted)
+    }
+
+    @Test
+    fun completingExerciseUpdatesAllItsSeriesAndCanBeUndone() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("D — Conclusão rápida")
+        workoutRepository.createAndAddExercise(workoutId, "Remada", null)
+        sessionRepository.startSession(workoutId)
+        val exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+
+        sessionRepository.setExerciseCompleted(exercise.id, true)
+
+        var activeExercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        assertEquals(true, activeExercise.isCompleted)
+        assertEquals(true, activeExercise.series.all { it.isCompleted })
+        assertEquals(
+            RestTimerStatus.RUNNING,
+            sessionRepository.observeActiveSession().first()!!.restTimer!!.status,
+        )
+
+        sessionRepository.setExerciseCompleted(exercise.id, false)
+
+        activeExercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        assertEquals(false, activeExercise.isCompleted)
+        assertEquals(false, activeExercise.series.any { it.isCompleted })
     }
 
     private class FakeSessionClock : SessionClock {

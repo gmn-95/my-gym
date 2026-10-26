@@ -100,6 +100,10 @@ class SessionViewModel(
         action = { repository.setExerciseSetCompleted(exerciseId, setId, completed) },
     )
 
+    fun setExerciseCompleted(exerciseId: String, completed: Boolean) = launchOperation(
+        action = { repository.setExerciseCompleted(exerciseId, completed) },
+    )
+
     fun pauseRest() = launchOperation(repository::pauseRest)
 
     fun resumeRest() = launchOperation(repository::resumeRest)

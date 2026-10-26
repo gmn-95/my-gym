@@ -40,6 +40,7 @@ fun MyGymApp() {
                     onPauseSession = sessionViewModel::pauseSession,
                     onResumeSession = sessionViewModel::resumeSession,
                     onSetSeriesCompleted = sessionViewModel::setExerciseSetCompleted,
+                    onSetExerciseCompleted = sessionViewModel::setExerciseCompleted,
                     onPauseRest = sessionViewModel::pauseRest,
                     onResumeRest = sessionViewModel::resumeRest,
                     onResetRest = sessionViewModel::resetRest,

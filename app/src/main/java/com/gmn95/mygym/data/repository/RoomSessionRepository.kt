@@ -179,7 +179,20 @@ class RoomSessionRepository(
             val allSeriesCompleted = sessionExerciseSetDao.getByExercise(exercise.id)
                 .all(SessionExerciseSetEntity::isCompleted)
             sessionExerciseDao.setCompleted(exercise.id, allSeriesCompleted)
-            if (isCompleted) {
+            if (isCompleted && exercise.restSeconds > 0) {
+                startRestForExercise(active, exercise)
+            }
+        }
+    }
+
+    override suspend fun setExerciseCompleted(sessionExerciseId: String, isCompleted: Boolean) {
+        database.withTransaction {
+            val active = sessionDao.getActive() ?: return@withTransaction
+            val exercise = sessionExerciseDao.getById(sessionExerciseId) ?: return@withTransaction
+            check(exercise.sessionId == active.id)
+            sessionExerciseSetDao.setCompletedForExercise(exercise.id, isCompleted)
+            sessionExerciseDao.setCompleted(exercise.id, isCompleted)
+            if (isCompleted && exercise.restSeconds > 0) {
                 startRestForExercise(active, exercise)
             }
         }

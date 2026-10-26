@@ -22,7 +22,6 @@
     <string name="exercises">Exercises</string>
     <string name="add_exercise">Add exercise</string>
     <string name="no_exercises_description">This workout has no exercises. Add a manual exercise to begin.</string>
-    <string name="workout_editor_footer">Workout sessions will be implemented in the next development stage.</string>
     <string name="workout_not_found">This workout no longer exists.</string>
     <string name="back">Back</string>
     <string name="repetition_range">%1$d–%2$d</string>
@@ -74,7 +73,11 @@
     <string name="restart">Restart</string>
     <string name="end_rest">End</string>
     <string name="series_completion_hint">Checking a series starts its rest timer automatically.</string>
+    <string name="series_progress">%1$d of %2$d sets completed</string>
     <string name="series_number">Set %1$d</string>
+    <string name="exercise_completed">Exercise completed</string>
+    <string name="expand_sets">Show sets</string>
+    <string name="collapse_sets">Hide sets</string>
     <string name="cancel_workout">Cancel workout</string>
     <string name="finish_workout">Finish workout</string>
     <string name="finish_workout_title">Finish this workout?</string>

@@ -199,14 +199,6 @@ fun WorkoutEditorScreen(
                         }
                     }
 
-                    item {
-                        Text(
-                            text = stringResource(R.string.workout_editor_footer),
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
                 }
             }
         }
