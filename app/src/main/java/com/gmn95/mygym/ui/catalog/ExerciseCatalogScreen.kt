@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +30,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import android.net.Uri
+import android.widget.VideoView
 import coil3.compose.AsyncImage
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.remote.CatalogExercise
@@ -110,7 +113,7 @@ fun ExerciseCatalogScreen(
             }
             if (uiState.isLoading && uiState.exercises.isNotEmpty()) {
                 item { CircularProgressIndicator(Modifier.padding(16.dp)) }
-            } else if (uiState.nextCursor != null) {
+            } else if (uiState.nextPageUrl != null) {
                 item {
                     TextButton(onClick = onLoadNextPage, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.catalog_load_more))
@@ -131,25 +134,15 @@ private fun CatalogExerciseCard(
     Card(Modifier.fillMaxWidth().clickable(onClick = onToggle)) {
         Column(Modifier.padding(16.dp)) {
             Text(exercise.name, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            val metadata = listOf(exercise.bodyParts, exercise.targetMuscles, exercise.equipment)
-                .flatten().distinct().joinToString(" • ")
-            if (metadata.isNotBlank()) {
-                Text(metadata, Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
-            }
             if (isExpanded) {
-                exercise.gifUrl?.let { gifUrl ->
-                    AsyncImage(
-                        model = gifUrl,
-                        contentDescription = stringResource(R.string.catalog_gif_description, exercise.name),
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 260.dp).padding(top = 12.dp),
-                        contentScale = ContentScale.Fit,
+                CatalogExerciseMedia(exercise)
+                exercise.mediaAttribution?.let { attribution ->
+                    Text(
+                        stringResource(R.string.catalog_media_attribution, attribution),
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
                     )
-                }
-                if (exercise.instructions.isNotEmpty()) {
-                    Text(stringResource(R.string.catalog_instructions), Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleSmall)
-                    exercise.instructions.forEachIndexed { index, instruction ->
-                        Text("${index + 1}. $instruction", Modifier.padding(top = 4.dp), style = MaterialTheme.typography.bodySmall)
-                    }
                 }
                 Button(onClick = onAdd, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
                     Text(stringResource(R.string.catalog_add_exercise))
@@ -160,5 +153,43 @@ private fun CatalogExerciseCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CatalogExerciseMedia(exercise: CatalogExercise) {
+    when {
+        exercise.videoUrl != null -> AndroidView(
+            factory = { context ->
+                VideoView(context).apply {
+                    setOnPreparedListener { player ->
+                        player.isLooping = true
+                        start()
+                    }
+                }
+            },
+            update = { view ->
+                if (view.tag != exercise.videoUrl) {
+                    view.tag = exercise.videoUrl
+                    view.setVideoURI(Uri.parse(exercise.videoUrl))
+                    view.start()
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(240.dp).padding(top = 12.dp),
+        )
+
+        exercise.imageUrl != null -> AsyncImage(
+            model = exercise.imageUrl,
+            contentDescription = stringResource(R.string.catalog_media_description, exercise.name),
+            modifier = Modifier.fillMaxWidth().height(240.dp).padding(top = 12.dp),
+            contentScale = ContentScale.Fit,
+        )
+
+        else -> Text(
+            stringResource(R.string.catalog_media_not_available),
+            modifier = Modifier.padding(top = 12.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
+        )
     }
 }

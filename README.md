@@ -11,7 +11,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Room/SQLite com exportação do esquema habilitada.
 - Fichas que agrupam múltiplos treinos, com criação, edição, duplicação e exclusão confirmada dos treinos.
 - Exercícios manuais reutilizáveis em diferentes treinos.
-- Busca sob demanda na ExerciseDB, com detalhes, instruções e GIF remoto quando disponível.
+- Busca sob demanda na wger, limitada a resultados com tradução em português, com vídeo ou imagem remotos quando disponíveis.
 - Séries, repetições fixas ou em faixa e descanso em minutos/segundos.
 - Reordenação e remoção dos exercícios de um treino.
 - Sessão com snapshot do treino, conclusão individual de cada série e apenas um treino ativo por vez.
@@ -22,7 +22,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
 - `applicationId` definitivo: `com.gmn95.mygym`.
-- Versão atual: `versionCode 8` / `versionName 0.7.0`.
+- Versão atual: `versionCode 9` / `versionName 0.8.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
 As sessões persistidas alimentam o calendário, a lista de histórico e a duração média dos treinos.
@@ -33,7 +33,7 @@ As sessões persistidas alimentam o calendário, a lista de histórico e a dura�
 2. Abra a ficha, use **Adicionar treino** e informe um nome, como `A — Superiores`.
 3. Abra o treino e use **Adicionar exercício**.
 4. Crie um exercício manual com nome e observações opcionais, ou reutilize um exercício já cadastrado.
-5. Como alternativa, toque em **Buscar no catálogo ExerciseDB**, pesquise pelo nome e abra um resultado para consultar GIF e instruções antes de adicioná-lo.
+5. Como alternativa, toque em **Buscar no catálogo wger**, pesquise pelo nome e abra um resultado para consultar vídeo ou imagem antes de adicioná-lo. A busca mostra somente itens que tenham tradução em português.
 6. Use **Editar** para definir séries, repetições e descanso, e **Subir** e **Descer** para alterar a ordem.
 7. Um treino pode ser aberto, duplicado ou excluído dentro da ficha. A exclusão sempre exige confirmação.
 8. Use **Iniciar treino** para criar uma sessão baseada em um snapshot do treino.
@@ -45,11 +45,11 @@ As sessões persistidas alimentam o calendário, a lista de histórico e a dura�
 14. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
 15. Em **Configurações**, escolha o tema e o idioma. As preferências ficam no Room e também são incluídas no backup JSON.
 
-## ExerciseDB
+## Catálogo wger
 
-O catálogo usa a versão gratuita da ExerciseDB somente para buscas iniciadas pelo usuário. A API oferece até 25 resultados por chamada, paginação por cursor, GIFs em 180p e limites de requisição rigorosos. O uso é permitido para projetos pessoais e não comerciais com atribuição à AscendAPI.
+O catálogo usa os endpoints públicos da [wger](https://wger.readthedocs.io/en/latest/api/api.html) somente em buscas iniciadas pelo usuário. A API publica o idioma `pt` (Português), sem uma variante independente `pt-BR`; por isso o app filtra cada resposta para manter somente traduções portuguesas. A pesquisa é feita pelo nome e a paginação segue o endereço devolvido pela própria API.
 
-O app não grava dados, instruções ou GIFs remotos no Room, no backup JSON ou no cache de disco. Ao adicionar um resultado, salva apenas o nome escolhido como exercício local para que o treino continue funcionando offline. A mídia permanece remota e pode não estar disponível sem conexão. Consulte os termos atuais em [ExerciseDB Free V1](https://oss.exercisedb.dev/docs).
+O app não grava dados, descrições, instruções, imagens ou vídeos remotos no Room, no backup JSON ou no cache de disco. Ao adicionar um resultado, salva apenas o nome escolhido como exercício local para que o treino continue funcionando offline. A mídia permanece remota e pode não estar disponível sem conexão. Quando a API informar licença e autor da mídia, essa atribuição é mostrada nos detalhes do exercício.
 
 ## Comportamento dos cronômetros
 

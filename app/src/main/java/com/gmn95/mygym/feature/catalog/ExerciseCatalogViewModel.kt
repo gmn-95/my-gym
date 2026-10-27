@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 data class ExerciseCatalogUiState(
     val query: String = "",
     val exercises: List<CatalogExercise> = emptyList(),
-    val nextCursor: String? = null,
+    val nextPageUrl: String? = null,
     val isLoading: Boolean = false,
     val selectedExerciseId: String? = null,
     val message: CatalogMessage? = null,
@@ -42,13 +42,13 @@ class ExerciseCatalogViewModel(
             mutableUiState.value = mutableUiState.value.copy(message = CatalogMessage.ENTER_SEARCH_TERM)
             return
         }
-        loadPage(name, after = null, append = false)
+        loadPage(name, nextPageUrl = null, append = false)
     }
 
     fun loadNextPage() {
         val state = mutableUiState.value
-        val cursor = state.nextCursor ?: return
-        loadPage(state.query.trim(), cursor, append = true)
+        val nextPageUrl = state.nextPageUrl ?: return
+        loadPage(state.query.trim(), nextPageUrl, append = true)
     }
 
     fun selectExercise(id: String) {
@@ -59,7 +59,7 @@ class ExerciseCatalogViewModel(
     fun addExercise(exercise: CatalogExercise, onAdded: () -> Unit) {
         viewModelScope.launch {
             runCatching {
-                // Apenas o nome escolhido entra no banco local; dados e GIFs da API continuam remotos.
+                // Apenas o nome escolhido entra no banco local; os dados e a mídia continuam remotos.
                 workoutRepository.createAndAddExercise(workoutId, exercise.name, null)
             }.onSuccess { onAdded() }
                 .onFailure { mutableUiState.value = mutableUiState.value.copy(message = CatalogMessage.ADD_ERROR) }
@@ -70,16 +70,16 @@ class ExerciseCatalogViewModel(
         mutableUiState.value = mutableUiState.value.copy(message = null)
     }
 
-    private fun loadPage(name: String, after: String?, append: Boolean) {
+    private fun loadPage(name: String, nextPageUrl: String?, append: Boolean) {
         if (mutableUiState.value.isLoading) return
         viewModelScope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, message = null)
-            runCatching { catalogRepository.search(name, after) }
+            runCatching { catalogRepository.search(name, nextPageUrl) }
                 .onSuccess { page ->
                     val current = mutableUiState.value
                     mutableUiState.value = current.copy(
                         exercises = if (append) current.exercises + page.exercises else page.exercises,
-                        nextCursor = page.nextCursor,
+                        nextPageUrl = page.nextPageUrl,
                         isLoading = false,
                     )
                 }

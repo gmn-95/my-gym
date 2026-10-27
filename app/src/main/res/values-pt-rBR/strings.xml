@@ -80,10 +80,10 @@
     <string name="reuse_exercise">Adicionar um exercício manual existente</string>
     <string name="add">Adicionar</string>
     <string name="or_create_exercise">Ou criar um exercício manual</string>
-    <string name="search_catalog">Buscar no catálogo ExerciseDB</string>
-    <string name="catalog_title">Catálogo de exercícios</string>
+    <string name="search_catalog">Buscar no catálogo wger</string>
+    <string name="catalog_title">Catálogo de exercícios wger</string>
     <string name="catalog_credits_title">Créditos do catálogo</string>
-    <string name="catalog_attribution">Dados e GIFs fornecidos por AscendAPI / ExerciseDB.</string>
+    <string name="catalog_attribution">Nomes e mídias fornecidos pela wger. São exibidos somente resultados com tradução em português.</string>
     <string name="catalog_search_label">Buscar pelo nome do exercício</string>
     <string name="search">Buscar</string>
     <string name="catalog_enter_search_term">Informe ao menos dois caracteres para buscar.</string>
@@ -92,9 +92,10 @@
     <string name="catalog_no_results">Nenhum exercício foi encontrado para essa busca.</string>
     <string name="catalog_load_more">Carregar mais resultados</string>
     <string name="catalog_show_details">Mostrar detalhes</string>
-    <string name="catalog_instructions">Instruções</string>
     <string name="catalog_add_exercise">Adicionar ao treino</string>
-    <string name="catalog_gif_description">Demonstração de %1$s</string>
+    <string name="catalog_media_description">Demonstração de %1$s</string>
+    <string name="catalog_media_not_available">Não há mídia disponível para este exercício.</string>
+    <string name="catalog_media_attribution">Licença da mídia: %1$s</string>
     <string name="exercise_name">Nome do exercício</string>
     <string name="notes_optional">Observações (opcional)</string>
     <string name="default_configuration_hint">Novos exercícios começam com 3 séries, 10 repetições e 60 segundos de descanso. Você poderá editar esses valores após adicioná-los.</string>
