@@ -14,6 +14,17 @@
     <string name="average_duration">Average: %1$s</string>
     <string name="history">History</string>
     <string name="calendar">Calendar</string>
+    <string name="backup_short">Backup</string>
+    <string name="backup_title">Data backup</string>
+    <string name="backup_description">Export your workouts, custom exercises, history and preferences to a JSON file, or restore them from a backup.</string>
+    <string name="export_backup">Export backup</string>
+    <string name="import_backup">Import backup</string>
+    <string name="backup_exported">Backup exported.</string>
+    <string name="backup_restored">Backup restored.</string>
+    <string name="backup_invalid_file">This backup is invalid or incompatible. Your current data was not changed.</string>
+    <string name="confirm_import_title">Replace current data?</string>
+    <string name="confirm_import_message">This file contains %1$d workouts, %2$d custom exercises and %3$d completed sessions. Importing replaces all current app data.</string>
+    <string name="replace_data">Replace data</string>
     <string name="previous_month">Previous</string>
     <string name="next_month">Next</string>
     <string name="select_training_day">Select a highlighted day to see its workouts.</string>

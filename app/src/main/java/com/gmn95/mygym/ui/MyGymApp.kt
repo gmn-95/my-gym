@@ -14,11 +14,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
+import com.gmn95.mygym.feature.backup.BackupViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
 import com.gmn95.mygym.feature.history.HistoryViewModel
 import com.gmn95.mygym.feature.history.HistoryDetailViewModel
 import com.gmn95.mygym.feature.session.SessionViewModel
 import com.gmn95.mygym.ui.editor.WorkoutEditorScreen
+import com.gmn95.mygym.ui.backup.BackupScreen
 import com.gmn95.mygym.ui.history.HistoryScreen
 import com.gmn95.mygym.ui.history.HistoryDetailScreen
 import com.gmn95.mygym.ui.history.CalendarScreen
@@ -39,6 +41,7 @@ fun MyGymApp() {
             var showActiveSession by rememberSaveable { mutableStateOf(false) }
             var showHistory by rememberSaveable { mutableStateOf(false) }
             var showCalendar by rememberSaveable { mutableStateOf(false) }
+        var showBackup by rememberSaveable { mutableStateOf(false) }
             var selectedHistorySessionId by rememberSaveable { mutableStateOf<String?>(null) }
 
             val workoutId = selectedWorkoutId
@@ -73,6 +76,16 @@ fun MyGymApp() {
                         }
                     },
                     onOperationErrorShown = sessionViewModel::clearOperationError,
+                )
+            }
+
+            showBackup -> {
+                val backupViewModel: BackupViewModel = viewModel(
+                    factory = BackupViewModel.factory(application.workoutBackupRepository),
+                )
+                BackupScreen(
+                    viewModel = backupViewModel,
+                    onBack = { showBackup = false },
                 )
             }
 
@@ -141,6 +154,7 @@ fun MyGymApp() {
                     showHistory = false
                     showCalendar = true
                 },
+                onOpenBackup = { showBackup = true },
                 onDuplicateWorkout = homeViewModel::duplicateWorkout,
                 onDeleteWorkout = homeViewModel::deleteWorkout,
                 onStartWorkout = { id ->

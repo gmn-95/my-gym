@@ -14,6 +14,12 @@ interface SessionRestTimerDao {
     @Query("SELECT * FROM session_rest_timers WHERE session_id = :sessionId")
     suspend fun getBySession(sessionId: String): SessionRestTimerEntity?
 
+    @Query("SELECT * FROM session_rest_timers")
+    suspend fun getAll(): List<SessionRestTimerEntity>
+
+    @Query("DELETE FROM session_rest_timers")
+    suspend fun deleteAll()
+
     @Upsert
     suspend fun upsert(timer: SessionRestTimerEntity)
 

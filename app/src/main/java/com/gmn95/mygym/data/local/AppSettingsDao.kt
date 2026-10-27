@@ -10,6 +10,9 @@ interface AppSettingsDao {
     @Query("SELECT * FROM app_settings WHERE id = 0")
     fun observe(): Flow<AppSettingsEntity?>
 
+    @Query("SELECT * FROM app_settings WHERE id = 0")
+    suspend fun get(): AppSettingsEntity?
+
     @Upsert
     suspend fun upsert(settings: AppSettingsEntity)
 }

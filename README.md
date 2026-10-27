@@ -15,6 +15,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Sessão com snapshot da ficha, conclusão individual de cada série e apenas um treino ativo por vez.
 - Duração média real de cada ficha, baseada apenas em sessões concluídas.
 - Calendário mensal, lista e detalhe local de sessões concluídas, com duração e exercícios concluídos.
+- Backup JSON por seletor de arquivos Android, com validação e restauração transacional.
 - Cronômetro de tempo ativo com pausa explícita.
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
@@ -22,7 +23,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Versão atual: `versionCode 4` / `versionName 0.4.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média das fichas.
+Integração com a ExerciseDB e preferências de idioma/tema selecionáveis ainda não fazem parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média das fichas.
 
 ## Uso atual
 
@@ -38,6 +39,7 @@ Backup JSON e integração com a ExerciseDB ainda não fazem parte desta etapa. 
 10. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que a ficha original tenha sido excluída.
 11. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
 12. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
+13. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
 
 ## Comportamento dos cronômetros
 
@@ -122,6 +124,10 @@ O banco `my-gym.db` está na versão 4. A migração `1 → 2` cria fichas e exe
 4. incluir um teste de migração.
 
 Não será usado `fallbackToDestructiveMigration()` em builds do aplicativo. O `applicationId` `com.gmn95.mygym` também não poderá ser alterado. Atualizações release precisarão usar sempre a mesma chave de assinatura e um `versionCode` maior.
+
+## Backup JSON
+
+O backup usa o seletor de documentos do Android e não solicita permissão ampla de armazenamento. O formato atual tem `schemaVersion: 1` e inclui fichas, exercícios manuais, configurações, sessões, snapshots das séries e preferências. A importação substitui os dados locais após confirmação; mesclagem ainda não está disponível. A leitura, validação e gravação ocorrem antes/ dentro de uma única transação para evitar banco parcialmente restaurado. Sessões e descansos que estavam ativos são salvos como pausados, com os tempos calculados no momento da exportação.
 
 ## Estrutura
 

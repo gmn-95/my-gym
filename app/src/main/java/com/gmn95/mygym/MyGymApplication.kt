@@ -2,6 +2,7 @@ package com.gmn95.mygym
 
 import android.app.Application
 import com.gmn95.mygym.data.local.MyGymDatabase
+import com.gmn95.mygym.data.backup.WorkoutBackupRepository
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
 import com.gmn95.mygym.data.repository.RoomSessionRepository
 import com.gmn95.mygym.data.repository.SessionRepository
@@ -24,5 +25,9 @@ class MyGymApplication : Application() {
 
     val sessionRepository: SessionRepository by lazy {
         RoomSessionRepository(database, sessionClock)
+    }
+
+    val workoutBackupRepository: WorkoutBackupRepository by lazy {
+        WorkoutBackupRepository(database, sessionClock)
     }
 }

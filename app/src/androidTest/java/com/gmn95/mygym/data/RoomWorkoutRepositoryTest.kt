@@ -6,9 +6,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.gmn95.mygym.data.local.MyGymDatabase
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
+import com.gmn95.mygym.data.backup.WorkoutBackupRepository
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
+import com.gmn95.mygym.domain.session.SessionClock
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -124,5 +126,32 @@ class RoomWorkoutRepositoryTest {
         val summary = repository.observeWorkouts().first().single()
 
         assertEquals(90_000L, summary.averageDurationMillis)
+    }
+
+    @Test
+    fun backupRoundTripRestoresWorkoutAndInvalidBackupDoesNotReplaceData() = runBlocking {
+        val workoutId = repository.createWorkout("Ficha para backup")
+        repository.createAndAddExercise(workoutId, "Supino", "Pegada média")
+        val backupRepository = WorkoutBackupRepository(database, TestSessionClock)
+
+        val json = backupRepository.createJson()
+        repository.deleteWorkout(workoutId)
+        backupRepository.restore(json)
+
+        val restored = repository.observeWorkouts().first().single()
+        assertEquals("Ficha para backup", restored.name)
+        assertEquals(
+            listOf("Supino"),
+            repository.observeWorkout(restored.id).first()!!.exercises.map { it.name },
+        )
+
+        assertTrue(runCatching { backupRepository.restore("{invalid") }.isFailure)
+        assertEquals(listOf(restored.id), repository.observeWorkouts().first().map { it.id })
+    }
+
+    private object TestSessionClock : SessionClock {
+        override fun epochMillis() = 10_000L
+        override fun elapsedRealtimeMillis() = 500L
+        override fun bootCount() = 1
     }
 }

@@ -42,6 +42,12 @@ interface WorkoutSessionDao {
     @Query("SELECT * FROM workout_sessions WHERE id = :id")
     suspend fun getById(id: String): WorkoutSessionEntity?
 
+    @Query("SELECT * FROM workout_sessions ORDER BY started_at_epoch_millis")
+    suspend fun getAll(): List<WorkoutSessionEntity>
+
+    @Query("DELETE FROM workout_sessions")
+    suspend fun deleteAll()
+
     @Query(
         """
         SELECT
@@ -68,6 +74,9 @@ interface WorkoutSessionDao {
 
     @Insert
     suspend fun insert(session: WorkoutSessionEntity)
+
+    @Insert
+    suspend fun insertAll(sessions: List<WorkoutSessionEntity>)
 
     @Update
     suspend fun update(session: WorkoutSessionEntity)

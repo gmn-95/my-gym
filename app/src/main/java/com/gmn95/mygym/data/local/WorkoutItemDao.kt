@@ -57,6 +57,12 @@ interface WorkoutItemDao {
     )
     suspend fun getByWorkoutGroup(workoutGroupId: String): List<WorkoutItemEntity>
 
+    @Query("SELECT * FROM workout_items ORDER BY workout_group_id, position")
+    suspend fun getAll(): List<WorkoutItemEntity>
+
+    @Query("DELETE FROM workout_items")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM workout_items WHERE id = :id")
     suspend fun getById(id: String): WorkoutItemEntity?
 

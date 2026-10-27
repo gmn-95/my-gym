@@ -47,11 +47,17 @@ interface WorkoutGroupDao {
     @Query("SELECT * FROM workout_groups ORDER BY position, created_at_epoch_millis")
     suspend fun getAll(): List<WorkoutGroupEntity>
 
+    @Query("DELETE FROM workout_groups")
+    suspend fun deleteAll()
+
     @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM workout_groups")
     suspend fun nextPosition(): Int
 
     @Insert
     suspend fun insert(group: WorkoutGroupEntity)
+
+    @Insert
+    suspend fun insertAll(groups: List<WorkoutGroupEntity>)
 
     @Delete
     suspend fun delete(group: WorkoutGroupEntity)

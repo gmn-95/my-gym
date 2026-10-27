@@ -13,6 +13,15 @@ interface CustomExerciseDao {
     @Query("SELECT * FROM custom_exercises WHERE id = :id")
     suspend fun getById(id: String): CustomExerciseEntity?
 
+    @Query("SELECT * FROM custom_exercises")
+    suspend fun getAll(): List<CustomExerciseEntity>
+
+    @Query("DELETE FROM custom_exercises")
+    suspend fun deleteAll()
+
     @Insert
     suspend fun insert(exercise: CustomExerciseEntity)
+
+    @Insert
+    suspend fun insertAll(exercises: List<CustomExerciseEntity>)
 }

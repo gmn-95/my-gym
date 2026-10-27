@@ -23,6 +23,12 @@ interface SessionExerciseSetDao {
     @Query("SELECT * FROM session_exercise_sets WHERE id = :id")
     suspend fun getById(id: String): SessionExerciseSetEntity?
 
+    @Query("SELECT * FROM session_exercise_sets ORDER BY session_exercise_id, position")
+    suspend fun getAll(): List<SessionExerciseSetEntity>
+
+    @Query("DELETE FROM session_exercise_sets")
+    suspend fun deleteAll()
+
     @Query(
         """
         SELECT * FROM session_exercise_sets

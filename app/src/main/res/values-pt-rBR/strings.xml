@@ -14,6 +14,17 @@
     <string name="average_duration">Média: %1$s</string>
     <string name="history">Histórico</string>
     <string name="calendar">Calendário</string>
+    <string name="backup_short">Backup</string>
+    <string name="backup_title">Backup dos dados</string>
+    <string name="backup_description">Exporte fichas, exercícios personalizados, histórico e preferências para um arquivo JSON ou restaure um backup.</string>
+    <string name="export_backup">Exportar backup</string>
+    <string name="import_backup">Importar backup</string>
+    <string name="backup_exported">Backup exportado.</string>
+    <string name="backup_restored">Backup restaurado.</string>
+    <string name="backup_invalid_file">O backup é inválido ou incompatível. Seus dados atuais não foram alterados.</string>
+    <string name="confirm_import_title">Substituir os dados atuais?</string>
+    <string name="confirm_import_message">Este arquivo contém %1$d fichas, %2$d exercícios personalizados e %3$d sessões concluídas. A importação substitui todos os dados atuais do app.</string>
+    <string name="replace_data">Substituir dados</string>
     <string name="previous_month">Anterior</string>
     <string name="next_month">Próximo</string>
     <string name="select_training_day">Selecione um dia destacado para ver os treinos.</string>
