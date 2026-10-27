@@ -111,6 +111,43 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 Não desinstale o aplicativo antes de uma atualização se quiser preservar seus dados locais.
 
+## Gerar e atualizar uma versão release assinada
+
+Para uso contínuo no seu aparelho, gere APKs release sempre com a **mesma chave pessoal**. Crie-a uma única vez, fora deste repositório, e guarde a chave e as senhas em local seguro:
+
+```bash
+mkdir -p "$HOME/.android/my-gym"
+keytool -genkeypair -v \
+  -keystore "$HOME/.android/my-gym/my-gym-release.jks" \
+  -alias my-gym \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Na raiz do projeto, crie `keystore.properties`. Esse arquivo e arquivos `.jks` já estão no `.gitignore`; nunca os envie ao Git:
+
+```properties
+storeFile=/caminho/absoluto/para/my-gym-release.jks
+storePassword=sua-senha-do-cofre
+keyAlias=my-gym
+keyPassword=sua-senha-da-chave
+```
+
+Com a configuração local pronta, gere o APK:
+
+```bash
+./gradlew assembleRelease
+```
+
+O arquivo será criado em `app/build/outputs/apk/release/app-release.apk`. Para instalar ou atualizar um release em um aparelho conectado:
+
+```bash
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+Em instalação manual, copie o APK ao celular, abra-o por um gerenciador de arquivos e autorize a instalação para o aplicativo que abriu o arquivo quando o Android solicitar.
+
+O Android só aceita atualização direta quando o `applicationId`, a assinatura e o `versionCode` forem compatíveis. Antes de cada nova distribuição, aumente o `versionCode` em `app/build.gradle.kts`; não altere `com.gmn95.mygym` nem troque a keystore. Um APK debug e um APK release normalmente têm assinaturas diferentes: não é possível usar um para atualizar diretamente o outro. Para migrar de debug para release, exporte o backup JSON, desinstale o debug, instale o primeiro release e importe o backup. A desinstalação remove os dados locais.
+
 ## Testes e verificações
 
 Os comandos previstos para a etapa inicial são:
