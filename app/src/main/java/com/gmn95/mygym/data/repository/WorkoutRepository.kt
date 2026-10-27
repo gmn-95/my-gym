@@ -4,13 +4,21 @@ import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import kotlinx.coroutines.flow.Flow
 
 interface WorkoutRepository {
-    fun observeWorkouts(): Flow<List<WorkoutSummary>>
+    fun observeFolders(): Flow<List<WorkoutFolderSummary>>
+
+    fun observeFolder(id: String): Flow<WorkoutFolder?>
 
     fun observeWorkout(id: String): Flow<Workout?>
 
     fun observeCustomExercises(): Flow<List<CustomExercise>>
 
-    suspend fun createWorkout(name: String): String
+    suspend fun createFolder(name: String): String
+
+    suspend fun renameFolder(id: String, name: String)
+
+    suspend fun deleteFolder(id: String)
+
+    suspend fun createWorkout(folderId: String, name: String): String
 
     suspend fun renameWorkout(id: String, name: String)
 

@@ -10,6 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         AppSettingsEntity::class,
+        WorkoutFolderEntity::class,
         WorkoutGroupEntity::class,
         CustomExerciseEntity::class,
         WorkoutItemEntity::class,
@@ -18,11 +19,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         SessionRestTimerEntity::class,
         SessionExerciseSetEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class MyGymDatabase : RoomDatabase() {
     abstract fun appSettingsDao(): AppSettingsDao
+    abstract fun workoutFolderDao(): WorkoutFolderDao
     abstract fun workoutGroupDao(): WorkoutGroupDao
     abstract fun customExerciseDao(): CustomExerciseDao
     abstract fun workoutItemDao(): WorkoutItemDao
@@ -219,12 +221,44 @@ abstract class MyGymDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `workout_folders` (
+                        `id` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `created_at_epoch_millis` INTEGER NOT NULL,
+                        `updated_at_epoch_millis` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL("ALTER TABLE `workout_groups` ADD COLUMN `workout_folder_id` TEXT")
+                db.execSQL(
+                    """
+                    INSERT INTO `workout_folders` (
+                        id, name, position, created_at_epoch_millis, updated_at_epoch_millis
+                    )
+                    SELECT id, name, position, created_at_epoch_millis, updated_at_epoch_millis
+                    FROM `workout_groups`
+                    """.trimIndent(),
+                )
+                db.execSQL("UPDATE `workout_groups` SET `workout_folder_id` = id")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_workout_groups_workout_folder_id` " +
+                        "ON `workout_groups` (`workout_folder_id`)",
+                )
+            }
+        }
+
         fun create(context: Context): MyGymDatabase =
             Room.databaseBuilder(
                 context,
                 MyGymDatabase::class.java,
                 DATABASE_NAME,
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
     }
 }

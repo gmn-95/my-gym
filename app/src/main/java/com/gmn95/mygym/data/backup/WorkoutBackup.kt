@@ -6,6 +6,7 @@ import com.gmn95.mygym.data.local.SessionExerciseEntity
 import com.gmn95.mygym.data.local.SessionExerciseSetEntity
 import com.gmn95.mygym.data.local.SessionRestTimerEntity
 import com.gmn95.mygym.data.local.WorkoutGroupEntity
+import com.gmn95.mygym.data.local.WorkoutFolderEntity
 import com.gmn95.mygym.data.local.WorkoutItemEntity
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import org.json.JSONArray
@@ -13,6 +14,7 @@ import org.json.JSONObject
 
 data class WorkoutBackup(
     val settings: AppSettingsEntity,
+    val folders: List<WorkoutFolderEntity>,
     val groups: List<WorkoutGroupEntity>,
     val exercises: List<CustomExerciseEntity>,
     val items: List<WorkoutItemEntity>,
@@ -23,11 +25,12 @@ data class WorkoutBackup(
 )
 
 object WorkoutBackupJson {
-    const val CURRENT_SCHEMA_VERSION = 1
+    const val CURRENT_SCHEMA_VERSION = 2
 
     fun encode(backup: WorkoutBackup): String = JSONObject()
         .put("schemaVersion", CURRENT_SCHEMA_VERSION)
         .put("settings", backup.settings.toJson())
+        .put("workoutFolders", JSONArray().apply { backup.folders.forEach { put(it.toJson()) } })
         .put("workoutGroups", JSONArray().apply { backup.groups.forEach { put(it.toJson()) } })
         .put("customExercises", JSONArray().apply { backup.exercises.forEach { put(it.toJson()) } })
         .put("workoutItems", JSONArray().apply { backup.items.forEach { put(it.toJson()) } })
@@ -40,12 +43,29 @@ object WorkoutBackupJson {
     fun decode(json: String): WorkoutBackup {
         try {
             val root = JSONObject(json)
-            require(root.getInt("schemaVersion") == CURRENT_SCHEMA_VERSION) {
+            val version = root.getInt("schemaVersion")
+            require(version in 1..CURRENT_SCHEMA_VERSION) {
                 "Versão de backup incompatível"
+            }
+            val groups = root.getJSONArray("workoutGroups").mapObjects {
+                it.toWorkoutGroup(version)
             }
             val backup = WorkoutBackup(
                 settings = root.getJSONObject("settings").toSettings(),
-                groups = root.getJSONArray("workoutGroups").mapObjects { it.toWorkoutGroup() },
+                folders = if (version == 1) {
+                    groups.map { group ->
+                        WorkoutFolderEntity(
+                            id = requireNotNull(group.workoutFolderId),
+                            name = group.name,
+                            position = group.position,
+                            createdAtEpochMillis = group.createdAtEpochMillis,
+                            updatedAtEpochMillis = group.updatedAtEpochMillis,
+                        )
+                    }
+                } else {
+                    root.getJSONArray("workoutFolders").mapObjects { it.toWorkoutFolder() }
+                },
+                groups = groups,
                 exercises = root.getJSONArray("customExercises").mapObjects { it.toCustomExercise() },
                 items = root.getJSONArray("workoutItems").mapObjects { it.toWorkoutItem() },
                 sessions = root.getJSONArray("workoutSessions").mapObjects { it.toWorkoutSession() },
@@ -62,6 +82,7 @@ object WorkoutBackupJson {
     }
 
     private fun WorkoutBackup.validate() {
+        requireUnique(folders.map { it.id }, "fichas")
         requireUnique(groups.map { it.id }, "fichas")
         requireUnique(exercises.map { it.id }, "exercícios")
         requireUnique(items.map { it.id }, "itens")
@@ -69,7 +90,11 @@ object WorkoutBackupJson {
         requireUnique(sessionExercises.map { it.id }, "exercícios do histórico")
         requireUnique(sessionSets.map { it.id }, "séries")
         requireUnique(restTimers.map { it.sessionId }, "cronômetros")
-        require(groups.all { it.id.isNotBlank() && it.name.isNotBlank() && it.position >= 0 })
+        require(folders.all { it.id.isNotBlank() && it.name.isNotBlank() && it.position >= 0 })
+        require(groups.all {
+            it.id.isNotBlank() && it.name.isNotBlank() && it.position >= 0 &&
+                it.workoutFolderId in folders.map(WorkoutFolderEntity::id)
+        })
         require(exercises.all { it.id.isNotBlank() && it.name.isNotBlank() })
         require(items.all {
             it.id.isNotBlank() && it.workoutGroupId in groups.map(WorkoutGroupEntity::id) &&
@@ -129,13 +154,26 @@ object WorkoutBackupJson {
         languageMode = requiredString("languageMode"),
     )
 
-    private fun WorkoutGroupEntity.toJson() = JSONObject()
+    private fun WorkoutFolderEntity.toJson() = JSONObject()
         .put("id", id).put("name", name).put("position", position)
         .put("createdAtEpochMillis", createdAtEpochMillis)
         .put("updatedAtEpochMillis", updatedAtEpochMillis)
 
-    private fun JSONObject.toWorkoutGroup() = WorkoutGroupEntity(
+    private fun JSONObject.toWorkoutFolder() = WorkoutFolderEntity(
         id = requiredString("id"), name = requiredString("name"), position = getInt("position"),
+        createdAtEpochMillis = getLong("createdAtEpochMillis"),
+        updatedAtEpochMillis = getLong("updatedAtEpochMillis"),
+    )
+
+    private fun WorkoutGroupEntity.toJson() = JSONObject()
+        .put("id", id).put("name", name).put("position", position)
+        .put("workoutFolderId", workoutFolderId ?: JSONObject.NULL)
+        .put("createdAtEpochMillis", createdAtEpochMillis)
+        .put("updatedAtEpochMillis", updatedAtEpochMillis)
+
+    private fun JSONObject.toWorkoutGroup(version: Int) = WorkoutGroupEntity(
+        id = requiredString("id"), name = requiredString("name"), position = getInt("position"),
+        workoutFolderId = if (version == 1) requiredString("id") else requiredString("workoutFolderId"),
         createdAtEpochMillis = getLong("createdAtEpochMillis"),
         updatedAtEpochMillis = getLong("updatedAtEpochMillis"),
     )

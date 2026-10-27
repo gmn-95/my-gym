@@ -5,10 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.gmn95.mygym.data.repository.WorkoutRepository
-import com.gmn95.mygym.data.repository.WorkoutSummary
+import com.gmn95.mygym.data.repository.WorkoutFolderSummary
 import com.gmn95.mygym.data.repository.ActiveSessionSummary
 import com.gmn95.mygym.data.repository.SessionRepository
-import com.gmn95.mygym.data.repository.WorkoutHasNoExercisesException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,14 +17,13 @@ import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val isLoading: Boolean = true,
-    val workouts: List<WorkoutSummary> = emptyList(),
+    val folders: List<WorkoutFolderSummary> = emptyList(),
     val activeSession: ActiveSessionSummary? = null,
     val message: HomeMessage? = null,
 )
 
 enum class HomeMessage {
     OPERATION_FAILED,
-    WORKOUT_HAS_NO_EXERCISES,
 }
 
 class HomeViewModel(
@@ -35,13 +33,13 @@ class HomeViewModel(
     private val message = MutableStateFlow<HomeMessage?>(null)
 
     val uiState: StateFlow<HomeUiState> = combine(
-        workoutRepository.observeWorkouts(),
+        workoutRepository.observeFolders(),
         sessionRepository.observeActiveSessionSummary(),
         message,
-    ) { workouts, activeSession, currentMessage ->
+    ) { folders, activeSession, currentMessage ->
         HomeUiState(
             isLoading = false,
-            workouts = workouts,
+            folders = folders,
             activeSession = activeSession,
             message = currentMessage,
         )
@@ -51,51 +49,15 @@ class HomeViewModel(
         initialValue = HomeUiState(),
     )
 
-    fun createWorkout(name: String, onCreated: (String) -> Unit) {
+    fun createFolder(name: String, onCreated: (String) -> Unit) {
         launchOperation {
-            onCreated(workoutRepository.createWorkout(name))
+            onCreated(workoutRepository.createFolder(name))
         }
     }
 
-    fun duplicateWorkout(id: String, duplicateName: String) {
+    fun deleteFolder(id: String) {
         launchOperation {
-            workoutRepository.duplicateWorkout(id, duplicateName)
-        }
-    }
-
-    fun deleteWorkout(id: String) {
-        launchOperation {
-            workoutRepository.deleteWorkout(id)
-        }
-    }
-
-    fun startWorkout(id: String, onStarted: () -> Unit) {
-        viewModelScope.launch {
-            runCatching { sessionRepository.startSession(id) }
-                .onSuccess { onStarted() }
-                .onFailure { error ->
-                    message.value = if (error is WorkoutHasNoExercisesException) {
-                        HomeMessage.WORKOUT_HAS_NO_EXERCISES
-                    } else {
-                        HomeMessage.OPERATION_FAILED
-                    }
-                }
-        }
-    }
-
-    fun finishActiveAndStart(id: String, onStarted: () -> Unit) {
-        viewModelScope.launch {
-            runCatching {
-                sessionRepository.completeActiveAndStartSession(id)
-            }.onSuccess {
-                onStarted()
-            }.onFailure { error ->
-                message.value = if (error is WorkoutHasNoExercisesException) {
-                    HomeMessage.WORKOUT_HAS_NO_EXERCISES
-                } else {
-                    HomeMessage.OPERATION_FAILED
-                }
-            }
+            workoutRepository.deleteFolder(id)
         }
     }
 

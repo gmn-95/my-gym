@@ -82,6 +82,22 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun folderGroupsMultipleIndependentWorkouts() = runBlocking {
+        val folderId = repository.createFolder("Rotina")
+        val upperBodyId = repository.createWorkout(folderId, "A — Superiores")
+        val lowerBodyId = repository.createWorkout(folderId, "B — Inferiores")
+
+        repository.createAndAddExercise(upperBodyId, "Supino", null)
+        repository.createAndAddExercise(lowerBodyId, "Agachamento", null)
+
+        val folder = repository.observeFolder(folderId).first()!!
+        assertEquals("Rotina", folder.name)
+        assertEquals(listOf("A — Superiores", "B — Inferiores"), folder.workouts.map { it.name })
+        assertEquals(listOf("Supino"), repository.observeWorkout(upperBodyId).first()!!.exercises.map { it.name })
+        assertEquals(listOf("Agachamento"), repository.observeWorkout(lowerBodyId).first()!!.exercises.map { it.name })
+    }
+
+    @Test
     fun workoutSummaryUsesOnlyCompletedSessionsForAverageDuration() = runBlocking {
         val workoutId = repository.createWorkout("A — Superiores")
         database.workoutSessionDao().insert(

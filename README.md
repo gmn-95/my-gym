@@ -9,35 +9,35 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Idioma configurável entre português brasileiro, inglês ou idioma do dispositivo.
 - Textos iniciais em português brasileiro e inglês.
 - Room/SQLite com exportação do esquema habilitada.
-- Criação, edição, duplicação e exclusão confirmada de fichas.
-- Exercícios manuais reutilizáveis em diferentes fichas.
+- Fichas que agrupam múltiplos treinos, com criação, edição, duplicação e exclusão confirmada dos treinos.
+- Exercícios manuais reutilizáveis em diferentes treinos.
 - Séries, repetições fixas ou em faixa e descanso em minutos/segundos.
-- Reordenação e remoção dos exercícios de uma ficha.
-- Sessão com snapshot da ficha, conclusão individual de cada série e apenas um treino ativo por vez.
-- Duração média real de cada ficha, baseada apenas em sessões concluídas.
+- Reordenação e remoção dos exercícios de um treino.
+- Sessão com snapshot do treino, conclusão individual de cada série e apenas um treino ativo por vez.
+- Duração média real de cada treino, baseada apenas em sessões concluídas.
 - Calendário mensal, lista e detalhe local de sessões concluídas, com duração e exercícios concluídos.
 - Backup JSON por seletor de arquivos Android, com validação e restauração transacional.
 - Cronômetro de tempo ativo com pausa explícita.
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
 - `applicationId` definitivo: `com.gmn95.mygym`.
-- Versão atual: `versionCode 4` / `versionName 0.4.0`.
+- Versão atual: `versionCode 5` / `versionName 0.5.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Integração com a ExerciseDB e preferências de idioma/tema selecionáveis ainda não fazem parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média das fichas.
+Integração com a ExerciseDB ainda não faz parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média dos treinos.
 
 ## Uso atual
 
-1. Na tela **Meus treinos**, use **Nova ficha** e informe um nome.
-2. Abra a ficha e use **Adicionar exercício**.
-3. Crie um exercício manual com nome e observações opcionais, ou reutilize um exercício já cadastrado.
-4. Use **Editar** para definir séries, repetições e descanso.
-5. Use **Subir** e **Descer** para alterar a ordem dos exercícios.
-6. Na tela inicial, uma ficha pode ser aberta, duplicada ou excluída. A exclusão sempre exige confirmação.
-7. Use **Iniciar treino** para criar uma sessão baseada em um snapshot da ficha.
+1. Na tela **Minhas fichas**, use **Nova ficha** e informe um nome, como `Rotina`.
+2. Abra a ficha, use **Adicionar treino** e informe um nome, como `A — Superiores`.
+3. Abra o treino e use **Adicionar exercício**.
+4. Crie um exercício manual com nome e observações opcionais, ou reutilize um exercício já cadastrado.
+5. Use **Editar** para definir séries, repetições e descanso, e **Subir** e **Descer** para alterar a ordem.
+6. Um treino pode ser aberto, duplicado ou excluído dentro da ficha. A exclusão sempre exige confirmação.
+7. Use **Iniciar treino** para criar uma sessão baseada em um snapshot do treino.
 8. Durante o treino, use **Mostrar séries** para abrir os detalhes de um exercício. Ao marcar uma série, o descanso configurado começa automaticamente; também é possível marcar ou desmarcar todas as séries pelo controle **Exercício concluído**.
-9. Após concluir treinos, a tela inicial passa a mostrar a duração média ativa de cada ficha. Sessões canceladas não entram nesse cálculo.
-10. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que a ficha original tenha sido excluída.
+9. Após concluir treinos, a ficha passa a mostrar a duração média ativa de cada treino. Sessões canceladas não entram nesse cálculo.
+10. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que o treino original tenha sido excluído.
 11. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
 12. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
 13. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
@@ -122,7 +122,7 @@ Os testes unitários validam as configurações dos exercícios e os cálculos m
 
 ## Persistência e futuras atualizações
 
-O banco `my-gym.db` está na versão 4. A migração `1 → 2` cria fichas e exercícios; a migração `2 → 3` cria sessões, snapshots e o estado do descanso; a migração `3 → 4` cria as séries individuais para os snapshots já existentes. Todas preservam os dados anteriores. Os esquemas gerados pelo Room ficam em `app/schemas/` e são versionados. Toda mudança futura do esquema deverá:
+O banco `my-gym.db` está na versão 5. A migração `1 → 2` cria os treinos e exercícios; a migração `2 → 3` cria sessões, snapshots e o estado do descanso; a migração `3 → 4` cria as séries individuais para os snapshots já existentes; a migração `4 → 5` cria as fichas e coloca cada treino existente em uma ficha com o mesmo nome. Todas preservam os dados anteriores. Os esquemas gerados pelo Room ficam em `app/schemas/` e são versionados. Toda mudança futura do esquema deverá:
 
 1. aumentar a versão do banco;
 2. fornecer uma migração Room explícita;
@@ -133,7 +133,7 @@ Não será usado `fallbackToDestructiveMigration()` em builds do aplicativo. O `
 
 ## Backup JSON
 
-O backup usa o seletor de documentos do Android e não solicita permissão ampla de armazenamento. O formato atual tem `schemaVersion: 1` e inclui fichas, exercícios manuais, configurações, sessões, snapshots das séries e preferências. A importação substitui os dados locais após confirmação; mesclagem ainda não está disponível. A leitura, validação e gravação ocorrem antes/ dentro de uma única transação para evitar banco parcialmente restaurado. Sessões e descansos que estavam ativos são salvos como pausados, com os tempos calculados no momento da exportação.
+O backup usa o seletor de documentos do Android e não solicita permissão ampla de armazenamento. O formato atual tem `schemaVersion: 2` e inclui fichas, treinos, exercícios manuais, configurações, sessões, snapshots das séries e preferências. Backups no formato 1 continuam sendo aceitos, com cada treino restaurado em sua própria ficha. A importação substitui os dados locais após confirmação; mesclagem ainda não está disponível. A leitura, validação e gravação ocorrem antes/ dentro de uma única transação para evitar banco parcialmente restaurado. Sessões e descansos que estavam ativos são salvos como pausados, com os tempos calculados no momento da exportação.
 
 ## Estrutura
 

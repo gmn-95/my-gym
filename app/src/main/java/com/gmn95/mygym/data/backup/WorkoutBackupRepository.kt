@@ -52,6 +52,7 @@ class WorkoutBackupRepository(
             WorkoutBackup(
                 settings = database.appSettingsDao().get()
                     ?: com.gmn95.mygym.data.local.AppSettingsEntity(),
+                folders = database.workoutFolderDao().getAll(),
                 groups = database.workoutGroupDao().getAll(),
                 exercises = database.customExerciseDao().getAll(),
                 items = database.workoutItemDao().getAll(),
@@ -66,7 +67,7 @@ class WorkoutBackupRepository(
     fun validate(json: String): WorkoutBackupSummary {
         val backup = WorkoutBackupJson.decode(json)
         return WorkoutBackupSummary(
-            workoutCount = backup.groups.size,
+            workoutCount = backup.folders.size,
             customExerciseCount = backup.exercises.size,
             completedSessionCount = backup.sessions.count { it.status == "COMPLETED" },
         )
@@ -104,9 +105,11 @@ class WorkoutBackupRepository(
             database.workoutSessionDao().deleteAll()
             database.workoutItemDao().deleteAll()
             database.workoutGroupDao().deleteAll()
+            database.workoutFolderDao().deleteAll()
             database.customExerciseDao().deleteAll()
 
             database.appSettingsDao().upsert(backup.settings)
+            database.workoutFolderDao().insertAll(backup.folders)
             database.workoutGroupDao().insertAll(backup.groups)
             database.customExerciseDao().insertAll(backup.exercises)
             database.workoutItemDao().insertAll(backup.items)

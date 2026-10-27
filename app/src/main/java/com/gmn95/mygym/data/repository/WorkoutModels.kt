@@ -9,6 +9,18 @@ data class WorkoutSummary(
     val averageDurationMillis: Long?,
 )
 
+data class WorkoutFolderSummary(
+    val id: String,
+    val name: String,
+    val workoutCount: Int,
+)
+
+data class WorkoutFolder(
+    val id: String,
+    val name: String,
+    val workouts: List<WorkoutSummary>,
+)
+
 data class Workout(
     val id: String,
     val name: String,

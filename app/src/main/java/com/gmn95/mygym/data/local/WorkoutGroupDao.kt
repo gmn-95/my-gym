@@ -27,16 +27,36 @@ interface WorkoutGroupDao {
             CAST(AVG(workout_sessions.active_accumulated_millis) AS INTEGER)
                 AS average_duration_millis
         FROM workout_groups
+        LEFT JOIN workout_items ON workout_items.workout_group_id = workout_groups.id
+        LEFT JOIN workout_sessions
+            ON workout_sessions.workout_group_id = workout_groups.id
+            AND workout_sessions.status = 'COMPLETED'
+        GROUP BY workout_groups.id
+        ORDER BY workout_groups.workout_folder_id, workout_groups.position,
+            workout_groups.created_at_epoch_millis
+        """,
+    )
+    fun observeAllSummaries(): Flow<List<WorkoutGroupSummaryRow>>
+
+    @Query(
+        """
+        SELECT
+            workout_groups.*,
+            COUNT(DISTINCT workout_items.id) AS exercise_count,
+            CAST(AVG(workout_sessions.active_accumulated_millis) AS INTEGER)
+                AS average_duration_millis
+        FROM workout_groups
         LEFT JOIN workout_items
             ON workout_items.workout_group_id = workout_groups.id
         LEFT JOIN workout_sessions
             ON workout_sessions.workout_group_id = workout_groups.id
             AND workout_sessions.status = 'COMPLETED'
+        WHERE workout_groups.workout_folder_id = :folderId
         GROUP BY workout_groups.id
         ORDER BY workout_groups.position, workout_groups.created_at_epoch_millis
         """,
     )
-    fun observeSummaries(): Flow<List<WorkoutGroupSummaryRow>>
+    fun observeSummaries(folderId: String): Flow<List<WorkoutGroupSummaryRow>>
 
     @Query("SELECT * FROM workout_groups WHERE id = :id")
     fun observeById(id: String): Flow<WorkoutGroupEntity?>
@@ -44,14 +64,14 @@ interface WorkoutGroupDao {
     @Query("SELECT * FROM workout_groups WHERE id = :id")
     suspend fun getById(id: String): WorkoutGroupEntity?
 
-    @Query("SELECT * FROM workout_groups ORDER BY position, created_at_epoch_millis")
+    @Query("SELECT * FROM workout_groups ORDER BY workout_folder_id, position, created_at_epoch_millis")
     suspend fun getAll(): List<WorkoutGroupEntity>
 
     @Query("DELETE FROM workout_groups")
     suspend fun deleteAll()
 
-    @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM workout_groups")
-    suspend fun nextPosition(): Int
+    @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM workout_groups WHERE workout_folder_id = :folderId")
+    suspend fun nextPosition(folderId: String): Int
 
     @Insert
     suspend fun insert(group: WorkoutGroupEntity)

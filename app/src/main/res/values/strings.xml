@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">my-gym</string>
-    <string name="my_workouts">My workouts</string>
-    <string name="home_description">Create and organize your personal workout plans.</string>
+    <string name="my_workouts">My workout plans</string>
+    <string name="home_description">Create a plan, then organize its workouts.</string>
     <string name="create_workout">New workout</string>
+    <string name="create_folder">New plan</string>
+    <string name="folder_name">Plan name</string>
+    <string name="training_name">Workout name</string>
+    <string name="workouts">Workouts</string>
+    <string name="add_workout">Add workout</string>
+    <string name="no_folders_title">No workout plans yet</string>
+    <string name="no_folders_description">Use “New plan” to create your first plan.</string>
+    <string name="no_trainings_description">This plan has no workouts. Add one such as Upper body, Lower body or Full body.</string>
+    <string name="delete_folder_title">Delete plan?</string>
+    <string name="delete_folder_message">“%1$s” and its editable workouts will be removed. Completed sessions will not be affected.</string>
     <string name="create">Create</string>
     <string name="workout_name">Workout name</string>
     <string name="delete_workout_title">Delete workout?</string>
@@ -124,5 +134,9 @@
     <plurals name="exercise_count">
         <item quantity="one">%1$d exercise</item>
         <item quantity="other">%1$d exercises</item>
+    </plurals>
+    <plurals name="workout_count">
+        <item quantity="one">%1$d workout</item>
+        <item quantity="other">%1$d workouts</item>
     </plurals>
 </resources>

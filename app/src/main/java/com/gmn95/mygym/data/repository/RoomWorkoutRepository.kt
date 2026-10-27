@@ -3,6 +3,7 @@ package com.gmn95.mygym.data.repository
 import androidx.room.withTransaction
 import com.gmn95.mygym.data.local.CustomExerciseEntity
 import com.gmn95.mygym.data.local.MyGymDatabase
+import com.gmn95.mygym.data.local.WorkoutFolderEntity
 import com.gmn95.mygym.data.local.WorkoutGroupEntity
 import com.gmn95.mygym.data.local.WorkoutItemDetailsRow
 import com.gmn95.mygym.data.local.WorkoutItemEntity
@@ -18,18 +19,36 @@ class RoomWorkoutRepository(
     private val idFactory: () -> String = { UUID.randomUUID().toString() },
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
 ) : WorkoutRepository {
+    private val workoutFolderDao = database.workoutFolderDao()
     private val workoutGroupDao = database.workoutGroupDao()
     private val workoutItemDao = database.workoutItemDao()
     private val customExerciseDao = database.customExerciseDao()
 
-    override fun observeWorkouts(): Flow<List<WorkoutSummary>> =
-        workoutGroupDao.observeSummaries().map { rows ->
+    override fun observeFolders(): Flow<List<WorkoutFolderSummary>> =
+        workoutFolderDao.observeSummaries().map { rows ->
             rows.map { row ->
-                WorkoutSummary(
-                    id = row.group.id,
-                    name = row.group.name,
-                    exerciseCount = row.exerciseCount,
-                    averageDurationMillis = row.averageDurationMillis,
+                WorkoutFolderSummary(
+                    id = row.folder.id,
+                    name = row.folder.name,
+                    workoutCount = row.workoutCount,
+                )
+            }
+        }
+
+    /** Visão plana mantida para testes de persistência já existentes. */
+    fun observeWorkouts(): Flow<List<WorkoutSummary>> =
+        workoutGroupDao.observeAllSummaries().map { rows -> rows.map { it.toModel() } }
+
+    override fun observeFolder(id: String): Flow<WorkoutFolder?> =
+        combine(
+            workoutFolderDao.observeById(id),
+            workoutGroupDao.observeSummaries(id),
+        ) { folder, rows ->
+            folder?.let {
+                WorkoutFolder(
+                    id = it.id,
+                    name = it.name,
+                    workouts = rows.map { row -> row.toModel() },
                 )
             }
         }
@@ -59,17 +78,54 @@ class RoomWorkoutRepository(
             }
         }
 
-    override suspend fun createWorkout(name: String): String {
+    override suspend fun createFolder(name: String): String {
         require(WorkoutInputValidator.isValidName(name))
-        val normalizedName = name.trim()
         val id = idFactory()
         val now = currentTimeMillis()
         database.withTransaction {
+            workoutFolderDao.insert(
+                WorkoutFolderEntity(
+                    id = id,
+                    name = name.trim(),
+                    position = workoutFolderDao.nextPosition(),
+                    createdAtEpochMillis = now,
+                    updatedAtEpochMillis = now,
+                ),
+            )
+        }
+        return id
+    }
+
+    override suspend fun renameFolder(id: String, name: String) {
+        require(WorkoutInputValidator.isValidName(name))
+        workoutFolderDao.rename(id, name.trim(), currentTimeMillis())
+    }
+
+    override suspend fun deleteFolder(id: String) {
+        database.withTransaction {
+            val folder = workoutFolderDao.getById(id) ?: return@withTransaction
+            workoutGroupDao.getAll()
+                .filter { it.workoutFolderId == id }
+                .forEach { group -> workoutGroupDao.delete(group) }
+            workoutFolderDao.delete(folder)
+            workoutFolderDao.getAll().forEachIndexed { index, current ->
+                if (current.position != index) workoutFolderDao.updatePosition(current.id, index)
+            }
+        }
+    }
+
+    override suspend fun createWorkout(folderId: String, name: String): String {
+        require(WorkoutInputValidator.isValidName(name))
+        val id = idFactory()
+        val now = currentTimeMillis()
+        database.withTransaction {
+            checkNotNull(workoutFolderDao.getById(folderId))
             workoutGroupDao.insert(
                 WorkoutGroupEntity(
                     id = id,
-                    name = normalizedName,
-                    position = workoutGroupDao.nextPosition(),
+                    workoutFolderId = folderId,
+                    name = name.trim(),
+                    position = workoutGroupDao.nextPosition(folderId),
                     createdAtEpochMillis = now,
                     updatedAtEpochMillis = now,
                 ),
@@ -93,7 +149,9 @@ class RoomWorkoutRepository(
                 source.copy(
                     id = newId,
                     name = duplicateName.trim(),
-                    position = workoutGroupDao.nextPosition(),
+                    position = workoutGroupDao.nextPosition(
+                        source.workoutFolderId ?: error("Treino sem ficha"),
+                    ),
                     createdAtEpochMillis = now,
                     updatedAtEpochMillis = now,
                 ),
@@ -113,13 +171,21 @@ class RoomWorkoutRepository(
         database.withTransaction {
             workoutGroupDao.getById(id)?.let { group ->
                 workoutGroupDao.delete(group)
-            }
-            workoutGroupDao.getAll().forEachIndexed { index, group ->
-                if (group.position != index) {
-                    workoutGroupDao.updatePosition(group.id, index)
+                workoutGroupDao.getAll()
+                    .filter { it.workoutFolderId == group.workoutFolderId }
+                    .forEachIndexed { index, sibling ->
+                        if (sibling.position != index) {
+                            workoutGroupDao.updatePosition(sibling.id, index)
+                        }
+                    }
                 }
-            }
         }
+    }
+
+    /** Compatibilidade dos testes de persistência: cria uma ficha contendo um treino. */
+    suspend fun createWorkout(name: String): String {
+        val folderId = createFolder(name)
+        return createWorkout(folderId, name)
     }
 
     override suspend fun createAndAddExercise(
@@ -247,5 +313,12 @@ class RoomWorkoutRepository(
             repetitionsMax = item.repetitionsMax,
             restSeconds = item.restSeconds,
         ),
+    )
+
+    private fun com.gmn95.mygym.data.local.WorkoutGroupSummaryRow.toModel() = WorkoutSummary(
+        id = group.id,
+        name = group.name,
+        exerciseCount = exerciseCount,
+        averageDurationMillis = averageDurationMillis,
     )
 }

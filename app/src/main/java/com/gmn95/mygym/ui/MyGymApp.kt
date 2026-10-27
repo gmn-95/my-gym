@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
+import com.gmn95.mygym.feature.folder.WorkoutFolderViewModel
 import com.gmn95.mygym.feature.backup.BackupViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
 import com.gmn95.mygym.feature.settings.SettingsViewModel
@@ -29,6 +30,7 @@ import com.gmn95.mygym.ui.history.HistoryScreen
 import com.gmn95.mygym.ui.history.HistoryDetailScreen
 import com.gmn95.mygym.ui.history.CalendarScreen
 import com.gmn95.mygym.ui.home.HomeScreen
+import com.gmn95.mygym.ui.folder.WorkoutFolderScreen
 import com.gmn95.mygym.ui.session.SessionScreen
 import com.gmn95.mygym.ui.settings.SettingsScreen
 import com.gmn95.mygym.ui.theme.MyGymTheme
@@ -65,6 +67,7 @@ fun MyGymApp() {
             contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
             var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
+            var selectedFolderId by rememberSaveable { mutableStateOf<String?>(null) }
             var showActiveSession by rememberSaveable { mutableStateOf(false) }
             var showHistory by rememberSaveable { mutableStateOf(false) }
             var showCalendar by rememberSaveable { mutableStateOf(false) }
@@ -73,6 +76,7 @@ fun MyGymApp() {
             var selectedHistorySessionId by rememberSaveable { mutableStateOf<String?>(null) }
 
             val workoutId = selectedWorkoutId
+            val folderId = selectedFolderId
             when {
             showActiveSession -> {
                 val sessionViewModel: SessionViewModel = viewModel(
@@ -167,50 +171,7 @@ fun MyGymApp() {
                 )
             }
 
-            workoutId == null -> {
-            val homeViewModel: HomeViewModel = viewModel(
-                factory = HomeViewModel.factory(
-                    workoutRepository = application.workoutRepository,
-                    sessionRepository = application.sessionRepository,
-                ),
-            )
-            val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-            HomeScreen(
-                uiState = uiState,
-                onCreateWorkout = { name ->
-                    homeViewModel.createWorkout(name) { createdId ->
-                        selectedWorkoutId = createdId
-                    }
-                },
-                onOpenWorkout = { selectedWorkoutId = it },
-                onOpenHistory = {
-                    showCalendar = false
-                    showHistory = true
-                },
-                onOpenCalendar = {
-                    showHistory = false
-                    showCalendar = true
-                },
-                onOpenBackup = { showBackup = true },
-                onOpenSettings = { showSettings = true },
-                onDuplicateWorkout = homeViewModel::duplicateWorkout,
-                onDeleteWorkout = homeViewModel::deleteWorkout,
-                onStartWorkout = { id ->
-                    homeViewModel.startWorkout(id) {
-                        showActiveSession = true
-                    }
-                },
-                onResumeActiveSession = { showActiveSession = true },
-                onFinishActiveAndStart = { id ->
-                    homeViewModel.finishActiveAndStart(id) {
-                        showActiveSession = true
-                    }
-                },
-                onMessageShown = homeViewModel::clearMessage,
-            )
-            }
-
-            else -> {
+            workoutId != null -> {
             val editorViewModel: WorkoutEditorViewModel = viewModel(
                 key = "workout-editor-$workoutId",
                 factory = WorkoutEditorViewModel.factory(
@@ -229,6 +190,65 @@ fun MyGymApp() {
                 onRemoveExercise = editorViewModel::removeExercise,
                 onMoveExercise = editorViewModel::moveExercise,
                 onOperationErrorShown = editorViewModel::clearOperationError,
+            )
+            }
+
+            folderId != null -> {
+                val folderViewModel: WorkoutFolderViewModel = viewModel(
+                    key = "workout-folder-$folderId",
+                    factory = WorkoutFolderViewModel.factory(
+                        folderId = folderId,
+                        workoutRepository = application.workoutRepository,
+                        sessionRepository = application.sessionRepository,
+                    ),
+                )
+                val uiState by folderViewModel.uiState.collectAsStateWithLifecycle()
+                WorkoutFolderScreen(
+                    uiState = uiState,
+                    onBack = { selectedFolderId = null },
+                    onCreateWorkout = { name ->
+                        folderViewModel.createWorkout(name) { selectedWorkoutId = it }
+                    },
+                    onOpenWorkout = { selectedWorkoutId = it },
+                    onDuplicateWorkout = folderViewModel::duplicateWorkout,
+                    onDeleteWorkout = folderViewModel::deleteWorkout,
+                    onStartWorkout = { id -> folderViewModel.startWorkout(id) { showActiveSession = true } },
+                    onResumeActiveSession = { showActiveSession = true },
+                    onFinishActiveAndStart = { id ->
+                        folderViewModel.finishActiveAndStart(id) { showActiveSession = true }
+                    },
+                    onMessageShown = folderViewModel::clearMessage,
+                )
+            }
+
+            else -> {
+            val homeViewModel: HomeViewModel = viewModel(
+                factory = HomeViewModel.factory(
+                    workoutRepository = application.workoutRepository,
+                    sessionRepository = application.sessionRepository,
+                ),
+            )
+            val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+            HomeScreen(
+                uiState = uiState,
+                onCreateFolder = { name ->
+                    homeViewModel.createFolder(name) { createdId ->
+                        selectedFolderId = createdId
+                    }
+                },
+                onOpenFolder = { selectedFolderId = it },
+                onOpenHistory = {
+                    showCalendar = false
+                    showHistory = true
+                },
+                onOpenCalendar = {
+                    showHistory = false
+                    showCalendar = true
+                },
+                onOpenBackup = { showBackup = true },
+                onOpenSettings = { showSettings = true },
+                onDeleteFolder = homeViewModel::deleteFolder,
+                onResumeActiveSession = { showActiveSession = true },
             )
             }
             }

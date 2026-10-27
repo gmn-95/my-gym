@@ -138,9 +138,44 @@ class MyGymDatabaseMigrationTest {
         }
     }
 
+    @Test
+    @Throws(IOException::class)
+    fun migrateFrom4To5PlacesExistingTrainingsInTheirOwnFolders() {
+        helper.createDatabase(TEST_DATABASE_4, 4).apply {
+            execSQL(
+                """
+                INSERT INTO workout_groups (
+                    id, name, position, created_at_epoch_millis, updated_at_epoch_millis
+                ) VALUES ('training-a', 'A — Superiores', 0, 1000, 2000)
+                """.trimIndent(),
+            )
+            close()
+        }
+
+        val database = helper.runMigrationsAndValidate(
+            TEST_DATABASE_4,
+            5,
+            true,
+            MyGymDatabase.MIGRATION_4_5,
+        )
+
+        database.query(
+            "SELECT name, workout_folder_id FROM workout_groups WHERE id = 'training-a'",
+        ).use {
+            it.moveToFirst()
+            assertEquals("A — Superiores", it.getString(0))
+            assertEquals("training-a", it.getString(1))
+        }
+        database.query("SELECT name FROM workout_folders WHERE id = 'training-a'").use {
+            it.moveToFirst()
+            assertEquals("A — Superiores", it.getString(0))
+        }
+    }
+
     private companion object {
         const val TEST_DATABASE = "migration-test"
         const val TEST_DATABASE_2 = "migration-test-2"
         const val TEST_DATABASE_3 = "migration-test-3"
+        const val TEST_DATABASE_4 = "migration-test-4"
     }
 }

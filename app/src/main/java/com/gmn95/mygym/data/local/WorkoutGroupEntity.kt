@@ -2,12 +2,18 @@ package com.gmn95.mygym.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "workout_groups")
+@Entity(
+    tableName = "workout_groups",
+    indices = [Index(value = ["workout_folder_id"])],
+)
 data class WorkoutGroupEntity(
     @PrimaryKey
     val id: String,
+    @ColumnInfo(name = "workout_folder_id")
+    val workoutFolderId: String?,
     val name: String,
     val position: Int,
     @ColumnInfo(name = "created_at_epoch_millis")

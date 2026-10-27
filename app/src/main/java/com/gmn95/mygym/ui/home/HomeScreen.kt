@@ -2,7 +2,6 @@ package com.gmn95.mygym.ui.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +17,9 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,367 +32,116 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
-import com.gmn95.mygym.data.repository.WorkoutSummary
+import com.gmn95.mygym.data.repository.WorkoutFolderSummary
 import com.gmn95.mygym.feature.home.HomeUiState
-import com.gmn95.mygym.feature.home.HomeMessage
 
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onCreateWorkout: (String) -> Unit,
-    onOpenWorkout: (String) -> Unit,
+    onCreateFolder: (String) -> Unit,
+    onOpenFolder: (String) -> Unit,
+    onDeleteFolder: (String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenBackup: () -> Unit,
     onOpenSettings: () -> Unit,
-    onDuplicateWorkout: (String, String) -> Unit,
-    onDeleteWorkout: (String) -> Unit,
-    onStartWorkout: (String) -> Unit,
     onResumeActiveSession: () -> Unit,
-    onFinishActiveAndStart: (String) -> Unit,
-    onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
-    var workoutToDelete by remember { mutableStateOf<WorkoutSummary?>(null) }
-    var workoutToStartWhenActive by remember { mutableStateOf<WorkoutSummary?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val currentMessage = uiState.message?.let { message ->
-        when (message) {
-            HomeMessage.OPERATION_FAILED -> stringResource(R.string.operation_error)
-            HomeMessage.WORKOUT_HAS_NO_EXERCISES -> stringResource(R.string.empty_workout_cannot_start)
-        }
-    }
-
-    LaunchedEffect(currentMessage) {
-        if (currentMessage != null) {
-            snackbarHostState.showSnackbar(currentMessage)
-            onMessageShown()
-        }
-    }
-
+    var folderToDelete by remember { mutableStateOf<WorkoutFolderSummary?>(null) }
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showCreateDialog = true },
-            ) {
-                Text(stringResource(R.string.create_workout))
+            ExtendedFloatingActionButton(onClick = { showCreateDialog = true }) {
+                Text(stringResource(R.string.create_folder))
             }
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        Column(Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 20.dp)) {
+            Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(R.string.my_workouts),
+                    stringResource(R.string.my_workouts),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineMedium,
                 )
-                TextButton(onClick = onOpenSettings) {
-                    Text(stringResource(R.string.settings_short))
-                }
+                TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.settings_short)) }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onOpenHistory) { Text(stringResource(R.string.history)) }
                 TextButton(onClick = onOpenCalendar) { Text(stringResource(R.string.calendar)) }
                 TextButton(onClick = onOpenBackup) { Text(stringResource(R.string.backup_short)) }
             }
-            Text(
-                text = stringResource(R.string.home_description),
-                modifier = Modifier.padding(bottom = 16.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyLarge,
-            )
-
-            uiState.activeSession?.let { activeSession ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = stringResource(R.string.active_session_title),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            text = activeSession.workoutName,
-                            modifier = Modifier.padding(top = 4.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Button(
-                            onClick = onResumeActiveSession,
-                            modifier = Modifier
-                                .align(Alignment.End)
-                                .padding(top = 8.dp),
-                        ) {
-                            Text(stringResource(R.string.resume_workout))
+            Text(stringResource(R.string.home_description), Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            uiState.activeSession?.let { active ->
+                Card(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(R.string.active_session_title), style = MaterialTheme.typography.titleMedium)
+                            Text(active.workoutName, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                        Button(onClick = onResumeActiveSession) { Text(stringResource(R.string.resume_workout)) }
                     }
                 }
             }
-
             when {
-                uiState.isLoading -> LoadingContent()
-                uiState.workouts.isEmpty() -> EmptyContent()
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(uiState.workouts, key = WorkoutSummary::id) { workout ->
-                        val duplicateName = stringResource(R.string.workout_copy_name, workout.name)
-                        WorkoutCard(
-                            workout = workout,
-                            onOpen = { onOpenWorkout(workout.id) },
-                            onDuplicate = {
-                                onDuplicateWorkout(workout.id, duplicateName)
-                            },
-                            onDelete = { workoutToDelete = workout },
-                            onStart = {
-                                if (uiState.activeSession == null) {
-                                    onStartWorkout(workout.id)
-                                } else {
-                                    workoutToStartWhenActive = workout
-                                }
-                            },
-                        )
+                uiState.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
+                uiState.folders.isEmpty() -> EmptyFolders()
+                else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(uiState.folders, key = WorkoutFolderSummary::id) { folder ->
+                        FolderCard(folder, { onOpenFolder(folder.id) }, { folderToDelete = folder })
                     }
                 }
             }
         }
     }
-
     if (showCreateDialog) {
-        WorkoutNameDialog(
-            title = stringResource(R.string.create_workout),
-            confirmLabel = stringResource(R.string.create),
-            onDismiss = { showCreateDialog = false },
-            onConfirm = { name ->
-                onCreateWorkout(name)
-                showCreateDialog = false
-            },
-        )
+        NameDialog(stringResource(R.string.create_folder), stringResource(R.string.folder_name), { showCreateDialog = false }) {
+            onCreateFolder(it)
+            showCreateDialog = false
+        }
     }
-
-    workoutToDelete?.let { workout ->
+    folderToDelete?.let { folder ->
         AlertDialog(
-            onDismissRequest = { workoutToDelete = null },
-            title = { Text(stringResource(R.string.delete_workout_title)) },
-            text = { Text(stringResource(R.string.delete_workout_message, workout.name)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDeleteWorkout(workout.id)
-                        workoutToDelete = null
-                    },
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { workoutToDelete = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
-    }
-
-    workoutToStartWhenActive?.let { workout ->
-        AlertDialog(
-            onDismissRequest = { workoutToStartWhenActive = null },
-            title = { Text(stringResource(R.string.active_session_exists_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.active_session_exists_message,
-                        uiState.activeSession?.workoutName.orEmpty(),
-                        workout.name,
-                    ),
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        workoutToStartWhenActive = null
-                        onResumeActiveSession()
-                    },
-                ) {
-                    Text(stringResource(R.string.resume_current))
-                }
-            },
-            dismissButton = {
-                Row {
-                    TextButton(onClick = { workoutToStartWhenActive = null }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    TextButton(
-                        onClick = {
-                            workoutToStartWhenActive = null
-                            onFinishActiveAndStart(workout.id)
-                        },
-                    ) {
-                        Text(stringResource(R.string.finish_and_start))
-                    }
-                }
-            },
+            onDismissRequest = { folderToDelete = null },
+            title = { Text(stringResource(R.string.delete_folder_title)) },
+            text = { Text(stringResource(R.string.delete_folder_message, folder.name)) },
+            confirmButton = { Button(onClick = { onDeleteFolder(folder.id); folderToDelete = null }) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { TextButton(onClick = { folderToDelete = null }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }
 
 @Composable
-private fun WorkoutCard(
-    workout: WorkoutSummary,
-    onOpen: () -> Unit,
-    onDuplicate: () -> Unit,
-    onDelete: () -> Unit,
-    onStart: () -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onOpen),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = workout.name,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Text(
-                text = pluralStringResource(
-                    R.plurals.exercise_count,
-                    workout.exerciseCount,
-                    workout.exerciseCount,
-                ),
-                modifier = Modifier.padding(top = 4.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            val durationText = workout.averageDurationMillis?.let(::formatDuration) ?: stringResource(
-                R.string.no_history,
-            )
-            Text(
-                text = workout.averageDurationMillis?.let {
-                    stringResource(R.string.average_duration, durationText)
-                } ?: durationText,
-                modifier = Modifier.padding(top = 2.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onDuplicate) {
-                    Text(stringResource(R.string.duplicate))
-                }
-                TextButton(onClick = onDelete) {
-                    Text(stringResource(R.string.delete))
-                }
-                Button(onClick = onOpen) {
-                    Text(stringResource(R.string.edit))
-                }
-            }
-            Button(
-                onClick = onStart,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-            ) {
-                Text(stringResource(R.string.start_workout))
+private fun FolderCard(folder: WorkoutFolderSummary, onOpen: () -> Unit, onDelete: () -> Unit) {
+    Card(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
+        Column(Modifier.padding(16.dp)) {
+            Text(folder.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(pluralStringResource(R.plurals.workout_count, folder.workoutCount, folder.workoutCount), Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
+                Button(onClick = onOpen) { Text(stringResource(R.string.workouts)) }
             }
         }
     }
 }
 
 @Composable
-private fun WorkoutNameDialog(
-    title: String,
-    confirmLabel: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
-) {
-    var name by rememberSaveable { mutableStateOf("") }
+private fun EmptyFolders() {
+    Column(Modifier.fillMaxWidth().padding(top = 48.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(stringResource(R.string.no_folders_title), style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.no_folders_description), Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
+@Composable
+private fun NameDialog(title: String, label: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var name by rememberSaveable { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.workout_name)) },
-                singleLine = true,
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = { onConfirm(name.trim()) },
-                enabled = name.isNotBlank(),
-            ) {
-                Text(confirmLabel)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
+        text = { OutlinedTextField(name, { name = it }, label = { Text(label) }, singleLine = true) },
+        confirmButton = { Button(onClick = { onConfirm(name) }, enabled = name.trim().isNotEmpty()) { Text(stringResource(R.string.create)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
     )
 }
-
-@Composable
-private fun LoadingContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
-private fun EmptyContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(R.string.no_workouts_title),
-                style = MaterialTheme.typography.titleLarge,
-            )
-            Text(
-                text = stringResource(R.string.no_workouts_description),
-                modifier = Modifier.padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-private fun formatDuration(durationMillis: Long): String {
-    val totalSeconds = durationMillis.coerceAtLeast(0) / 1_000
-    val hours = totalSeconds / 3_600
-    val minutes = totalSeconds % 3_600 / 60
-    val seconds = totalSeconds % 60
-    return "%02d:%02d:%02d".format(hours, minutes, seconds)
-}
-
