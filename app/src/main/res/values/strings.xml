@@ -15,6 +15,16 @@
     <string name="history">History</string>
     <string name="calendar">Calendar</string>
     <string name="backup_short">Backup</string>
+    <string name="settings_short">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="theme_setting">Appearance</string>
+    <string name="theme_system">Follow system</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="language_setting">App language</string>
+    <string name="language_system">Follow device</string>
+    <string name="language_english">English</string>
+    <string name="language_portuguese">Português (Brasil)</string>
     <string name="backup_title">Data backup</string>
     <string name="backup_description">Export your workouts, custom exercises, history and preferences to a JSON file, or restore them from a backup.</string>
     <string name="export_backup">Export backup</string>

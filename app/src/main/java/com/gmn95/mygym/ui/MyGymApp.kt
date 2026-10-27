@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -12,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
 import com.gmn95.mygym.feature.backup.BackupViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
+import com.gmn95.mygym.feature.settings.SettingsViewModel
 import com.gmn95.mygym.feature.history.HistoryViewModel
 import com.gmn95.mygym.feature.history.HistoryDetailViewModel
 import com.gmn95.mygym.feature.session.SessionViewModel
@@ -26,22 +30,46 @@ import com.gmn95.mygym.ui.history.HistoryDetailScreen
 import com.gmn95.mygym.ui.history.CalendarScreen
 import com.gmn95.mygym.ui.home.HomeScreen
 import com.gmn95.mygym.ui.session.SessionScreen
+import com.gmn95.mygym.ui.settings.SettingsScreen
 import com.gmn95.mygym.ui.theme.MyGymTheme
 
 @Composable
 fun MyGymApp() {
-    MyGymTheme {
+    val application = LocalContext.current.applicationContext as MyGymApplication
+    val settingsViewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.factory(application.appSettingsRepository),
+    )
+    val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+    LaunchedEffect(settings.languageMode) {
+        val preferredLocales = when (settings.languageMode) {
+            SettingsViewModel.LANGUAGE_ENGLISH -> LocaleListCompat.forLanguageTags("en")
+            SettingsViewModel.LANGUAGE_PORTUGUESE -> LocaleListCompat.forLanguageTags("pt-BR")
+            else -> LocaleListCompat.getEmptyLocaleList()
+        }
+        if (AppCompatDelegate.getApplicationLocales().toLanguageTags() !=
+            preferredLocales.toLanguageTags()
+        ) {
+            AppCompatDelegate.setApplicationLocales(preferredLocales)
+        }
+    }
+    val darkTheme = when (settings.themeMode) {
+        SettingsViewModel.THEME_LIGHT -> false
+        SettingsViewModel.THEME_DARK -> true
+        else -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
+
+    MyGymTheme(darkTheme = darkTheme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
-            val application = LocalContext.current.applicationContext as MyGymApplication
             var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
             var showActiveSession by rememberSaveable { mutableStateOf(false) }
             var showHistory by rememberSaveable { mutableStateOf(false) }
             var showCalendar by rememberSaveable { mutableStateOf(false) }
         var showBackup by rememberSaveable { mutableStateOf(false) }
+            var showSettings by rememberSaveable { mutableStateOf(false) }
             var selectedHistorySessionId by rememberSaveable { mutableStateOf<String?>(null) }
 
             val workoutId = selectedWorkoutId
@@ -86,6 +114,15 @@ fun MyGymApp() {
                 BackupScreen(
                     viewModel = backupViewModel,
                     onBack = { showBackup = false },
+                )
+            }
+
+            showSettings -> {
+                SettingsScreen(
+                    settings = settings,
+                    onBack = { showSettings = false },
+                    onThemeSelected = settingsViewModel::setThemeMode,
+                    onLanguageSelected = settingsViewModel::setLanguageMode,
                 )
             }
 
@@ -155,6 +192,7 @@ fun MyGymApp() {
                     showCalendar = true
                 },
                 onOpenBackup = { showBackup = true },
+                onOpenSettings = { showSettings = true },
                 onDuplicateWorkout = homeViewModel::duplicateWorkout,
                 onDeleteWorkout = homeViewModel::deleteWorkout,
                 onStartWorkout = { id ->

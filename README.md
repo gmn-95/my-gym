@@ -5,7 +5,8 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 ## Estado atual
 
 - Kotlin e Jetpack Compose com Material 3.
-- Tema claro ou escuro seguindo o sistema.
+- Tema claro, escuro ou seguindo o sistema, com preferência local.
+- Idioma configurável entre português brasileiro, inglês ou idioma do dispositivo.
 - Textos iniciais em português brasileiro e inglês.
 - Room/SQLite com exportação do esquema habilitada.
 - Criação, edição, duplicação e exclusão confirmada de fichas.
@@ -40,6 +41,7 @@ Integração com a ExerciseDB e preferências de idioma/tema selecionáveis aind
 11. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
 12. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
 13. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
+14. Em **Configurações**, escolha o tema e o idioma. As preferências ficam no Room e também são incluídas no backup JSON.
 
 ## Comportamento dos cronômetros
 
@@ -49,6 +51,10 @@ Integração com a ExerciseDB e preferências de idioma/tema selecionáveis aind
 - Se o aparelho for reiniciado, uma sessão e um descanso que estavam ativos são recuperados pausados no último checkpoint. O período com o aparelho desligado não é contado.
 - O cronômetro de descanso é independente da pausa da sessão.
 - A conclusão total de um exercício é derivada: ele só aparece concluído depois que todas as suas séries forem marcadas.
+
+## Aparência e idioma
+
+O tema pode seguir o sistema ou ser fixado como claro/escuro. O idioma pode seguir o dispositivo ou ser fixado como português brasileiro/inglês; a troca atualiza os recursos localizados do app e é armazenada nas preferências Room.
 
 ## Pré-requisitos no Ubuntu/Linux
 

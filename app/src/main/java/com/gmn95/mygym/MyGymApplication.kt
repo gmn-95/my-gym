@@ -7,6 +7,7 @@ import com.gmn95.mygym.data.repository.RoomWorkoutRepository
 import com.gmn95.mygym.data.repository.RoomSessionRepository
 import com.gmn95.mygym.data.repository.SessionRepository
 import com.gmn95.mygym.data.repository.WorkoutRepository
+import com.gmn95.mygym.data.repository.AppSettingsRepository
 import com.gmn95.mygym.domain.session.AndroidSessionClock
 import com.gmn95.mygym.domain.session.SessionClock
 
@@ -29,5 +30,9 @@ class MyGymApplication : Application() {
 
     val workoutBackupRepository: WorkoutBackupRepository by lazy {
         WorkoutBackupRepository(database, sessionClock)
+    }
+
+    val appSettingsRepository: AppSettingsRepository by lazy {
+        AppSettingsRepository(database.appSettingsDao())
     }
 }

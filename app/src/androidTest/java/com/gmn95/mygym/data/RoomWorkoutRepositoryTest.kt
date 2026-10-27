@@ -8,6 +8,7 @@ import com.gmn95.mygym.data.local.MyGymDatabase
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import com.gmn95.mygym.data.backup.WorkoutBackupRepository
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
+import com.gmn95.mygym.data.repository.AppSettingsRepository
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import com.gmn95.mygym.domain.session.SessionClock
@@ -147,6 +148,18 @@ class RoomWorkoutRepositoryTest {
 
         assertTrue(runCatching { backupRepository.restore("{invalid") }.isFailure)
         assertEquals(listOf(restored.id), repository.observeWorkouts().first().map { it.id })
+    }
+
+    @Test
+    fun appSettingsPersistThemeAndLanguageTogether() = runBlocking {
+        val settingsRepository = AppSettingsRepository(database.appSettingsDao())
+
+        settingsRepository.setThemeMode("DARK")
+        settingsRepository.setLanguageMode("PT_BR")
+
+        val settings = database.appSettingsDao().get()!!
+        assertEquals("DARK", settings.themeMode)
+        assertEquals("PT_BR", settings.languageMode)
     }
 
     private object TestSessionClock : SessionClock {

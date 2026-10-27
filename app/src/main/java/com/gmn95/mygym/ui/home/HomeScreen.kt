@@ -48,6 +48,7 @@ fun HomeScreen(
     onOpenHistory: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenSettings: () -> Unit,
     onDuplicateWorkout: (String, String) -> Unit,
     onDeleteWorkout: (String) -> Unit,
     onStartWorkout: (String) -> Unit,
@@ -102,15 +103,17 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineMedium,
                 )
-                TextButton(onClick = onOpenHistory) {
-                    Text(stringResource(R.string.history))
+                TextButton(onClick = onOpenSettings) {
+                    Text(stringResource(R.string.settings_short))
                 }
-                TextButton(onClick = onOpenCalendar) {
-                    Text(stringResource(R.string.calendar))
-                }
-                TextButton(onClick = onOpenBackup) {
-                    Text(stringResource(R.string.backup_short))
-                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(onClick = onOpenHistory) { Text(stringResource(R.string.history)) }
+                TextButton(onClick = onOpenCalendar) { Text(stringResource(R.string.calendar)) }
+                TextButton(onClick = onOpenBackup) { Text(stringResource(R.string.backup_short)) }
             }
             Text(
                 text = stringResource(R.string.home_description),
