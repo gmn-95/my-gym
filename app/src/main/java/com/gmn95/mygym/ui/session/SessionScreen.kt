@@ -39,6 +39,7 @@ import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.ActiveRestTimer
 import com.gmn95.mygym.data.repository.ActiveSessionExercise
 import com.gmn95.mygym.data.repository.RestTimerStatus
+import com.gmn95.mygym.data.repository.SessionSeriesProgress
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.feature.session.SessionUiState
 
@@ -138,6 +139,19 @@ fun SessionScreen(
                             activeDurationMillis = uiState.activeDurationMillis,
                             onPause = onPauseSession,
                             onResume = onResumeSession,
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                        )
+                    }
+
+                    item {
+                        CurrentSeriesCard(
+                            progress = uiState.seriesProgress,
+                            onReturnToPrevious = { previous ->
+                                onSetSeriesCompleted(previous.exerciseId, previous.setId, false)
+                            },
+                            onCompleteAndAdvance = { current ->
+                                onSetSeriesCompleted(current.exerciseId, current.setId, true)
+                            },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
                     }
@@ -245,6 +259,64 @@ fun SessionScreen(
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun CurrentSeriesCard(
+    progress: SessionSeriesProgress,
+    onReturnToPrevious: (com.gmn95.mygym.data.repository.SessionSeriesReference) -> Unit,
+    onCompleteAndAdvance: (com.gmn95.mygym.data.repository.SessionSeriesReference) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val current = progress.current
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.current_series_title), style = MaterialTheme.typography.titleMedium)
+            if (current == null) {
+                Text(
+                    stringResource(R.string.all_series_completed),
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                return@Column
+            }
+            val repetitions = current.repetitionsMax?.let {
+                stringResource(R.string.repetition_range, current.repetitionsMin, it)
+            } ?: current.repetitionsMin.toString()
+            Text(
+                current.exerciseName,
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                stringResource(R.string.current_series_position, current.setPosition, current.totalSets),
+                modifier = Modifier.padding(top = 4.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(R.string.current_series_repetitions, repetitions),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { progress.previous?.let(onReturnToPrevious) },
+                    modifier = Modifier.weight(1f),
+                    enabled = progress.previous != null,
+                ) {
+                    Text(stringResource(R.string.previous_series))
+                }
+                Button(
+                    onClick = { onCompleteAndAdvance(current) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.complete_and_next_series))
+                }
+            }
+        }
     }
 }
 

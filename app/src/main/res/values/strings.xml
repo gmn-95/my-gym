@@ -148,6 +148,12 @@
     <string name="end_rest">Complete rest</string>
     <string name="rest_minus_ten_seconds">−10 s</string>
     <string name="rest_plus_ten_seconds">+10 s</string>
+    <string name="current_series_title">Current series</string>
+    <string name="all_series_completed">All series are complete. You can finish the workout.</string>
+    <string name="current_series_position">Set %1$d of %2$d</string>
+    <string name="current_series_repetitions">%1$s repetitions</string>
+    <string name="previous_series">Previous set</string>
+    <string name="complete_and_next_series">Complete and advance</string>
     <string name="series_completion_hint">Checking a series starts its rest timer automatically.</string>
     <string name="series_progress">%1$d of %2$d sets completed</string>
     <string name="series_number">Set %1$d</string>

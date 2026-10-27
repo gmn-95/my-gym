@@ -148,6 +148,12 @@
     <string name="end_rest">Concluir descanso</string>
     <string name="rest_minus_ten_seconds">−10 s</string>
     <string name="rest_plus_ten_seconds">+10 s</string>
+    <string name="current_series_title">Série atual</string>
+    <string name="all_series_completed">Todas as séries foram concluídas. Você já pode finalizar o treino.</string>
+    <string name="current_series_position">Série %1$d de %2$d</string>
+    <string name="current_series_repetitions">%1$s repetições</string>
+    <string name="previous_series">Série anterior</string>
+    <string name="complete_and_next_series">Concluir e avançar</string>
     <string name="series_completion_hint">Ao concluir uma série, o descanso inicia automaticamente.</string>
     <string name="series_progress">%1$d de %2$d séries concluídas</string>
     <string name="series_number">Série %1$d</string>

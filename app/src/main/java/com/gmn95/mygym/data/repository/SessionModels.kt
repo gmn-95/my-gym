@@ -44,6 +44,43 @@ data class ActiveExerciseSet(
     val isCompleted: Boolean,
 )
 
+data class SessionSeriesReference(
+    val exerciseId: String,
+    val exerciseName: String,
+    val setId: String,
+    val setPosition: Int,
+    val totalSets: Int,
+    val repetitionsMin: Int,
+    val repetitionsMax: Int?,
+)
+
+data class SessionSeriesProgress(
+    val current: SessionSeriesReference?,
+    val previous: SessionSeriesReference?,
+)
+
+/** A série atual é derivada do snapshot persistido, sem estado visual paralelo. */
+fun ActiveWorkoutSession.seriesProgress(): SessionSeriesProgress {
+    val series = exercises.flatMap { exercise ->
+        exercise.series.map { set ->
+            SessionSeriesReference(
+                exerciseId = exercise.id,
+                exerciseName = exercise.name,
+                setId = set.id,
+                setPosition = set.position,
+                totalSets = exercise.sets,
+                repetitionsMin = exercise.repetitionsMin,
+                repetitionsMax = exercise.repetitionsMax,
+            ) to set.isCompleted
+        }
+    }
+    val currentIndex = series.indexOfFirst { (_, isCompleted) -> !isCompleted }
+    return SessionSeriesProgress(
+        current = series.getOrNull(currentIndex)?.first,
+        previous = series.getOrNull(currentIndex - 1)?.first,
+    )
+}
+
 data class ActiveRestTimer(
     val sessionExerciseId: String,
     val exerciseName: String,

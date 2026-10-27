@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.gmn95.mygym.data.repository.ActiveWorkoutSession
+import com.gmn95.mygym.data.repository.SessionSeriesProgress
 import com.gmn95.mygym.data.repository.SessionRepository
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
+import com.gmn95.mygym.data.repository.seriesProgress
 import com.gmn95.mygym.domain.session.SessionClock
 import com.gmn95.mygym.domain.session.TimerMath
 import kotlinx.coroutines.currentCoroutineContext
@@ -26,6 +28,7 @@ data class SessionUiState(
     val session: ActiveWorkoutSession? = null,
     val activeDurationMillis: Long = 0,
     val restRemainingMillis: Long? = null,
+    val seriesProgress: SessionSeriesProgress = SessionSeriesProgress(null, null),
     val operationFailed: Boolean = false,
 )
 
@@ -73,6 +76,7 @@ class SessionViewModel(
                     currentBootCount = bootCount,
                 )
             },
+            seriesProgress = session?.seriesProgress() ?: SessionSeriesProgress(null, null),
             operationFailed = failed,
         )
     }.stateIn(
