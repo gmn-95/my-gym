@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">my-gym</string>
+    <string name="menu">Menu</string>
+    <string name="navigation_title">Navegação</string>
     <string name="my_workouts">Minhas fichas</string>
     <string name="home_description">Crie uma ficha e organize os treinos dentro dela.</string>
     <string name="create_workout">Novo treino</string>

@@ -22,7 +22,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
 - `applicationId` definitivo: `com.gmn95.mygym`.
-- Versão atual: `versionCode 11` / `versionName 0.10.0`.
+- Versão atual: `versionCode 12` / `versionName 0.11.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
 As sessões persistidas alimentam o calendário, a lista de histórico e a duração média dos treinos.

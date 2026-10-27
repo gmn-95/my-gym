@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,17 +16,22 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,6 +44,7 @@ import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.WorkoutFolderSummary
 import com.gmn95.mygym.feature.home.HomeMessage
 import com.gmn95.mygym.feature.home.HomeUiState
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -58,6 +65,8 @@ fun HomeScreen(
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var folderToDelete by remember { mutableStateOf<WorkoutFolderSummary?>(null) }
     val snackbar = remember { SnackbarHostState() }
+    val drawerState = androidx.compose.material3.rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     val message = when (uiState.message) {
         HomeMessage.OPERATION_FAILED -> stringResource(R.string.operation_error)
         null -> null
@@ -68,28 +77,73 @@ fun HomeScreen(
             onMessageShown()
         }
     }
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbar) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { showCreateDialog = true }) {
-                Text(stringResource(R.string.create_folder))
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    stringResource(R.string.navigation_title),
+                    modifier = Modifier.padding(24.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.history)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onOpenHistory()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.calendar)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onOpenCalendar()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.backup_short)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onOpenBackup()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.settings_short)) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onOpenSettings()
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
             }
         },
-    ) { innerPadding ->
-        Column(Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 20.dp)) {
+    ) {
+        Scaffold(
+            modifier = modifier,
+            snackbarHost = { SnackbarHost(snackbar) },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(onClick = { showCreateDialog = true }) {
+                    Text(stringResource(R.string.create_folder))
+                }
+            },
+        ) { innerPadding ->
+            Column(Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 20.dp)) {
             Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { scope.launch { drawerState.open() } }) {
+                    Text(stringResource(R.string.menu))
+                }
                 Text(
                     stringResource(R.string.my_workouts),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.headlineMedium,
                 )
-                TextButton(onClick = onOpenSettings) { Text(stringResource(R.string.settings_short)) }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onOpenHistory) { Text(stringResource(R.string.history)) }
-                TextButton(onClick = onOpenCalendar) { Text(stringResource(R.string.calendar)) }
-                TextButton(onClick = onOpenBackup) { Text(stringResource(R.string.backup_short)) }
             }
             Text(stringResource(R.string.home_description), Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             uiState.activeSession?.let { active ->
@@ -124,6 +178,7 @@ fun HomeScreen(
                 }
             }
         }
+        }
     }
     if (showCreateDialog) {
         NameDialog(stringResource(R.string.create_folder), stringResource(R.string.folder_name), { showCreateDialog = false }) {
@@ -157,15 +212,16 @@ private fun FolderCard(
         Column(Modifier.padding(16.dp)) {
             Text(folder.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(pluralStringResource(R.plurals.workout_count, folder.workoutCount, folder.workoutCount), Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+            Button(onClick = onOpen, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                Text(stringResource(R.string.workouts))
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
                 TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Spacer(Modifier.weight(1f))
                 TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
                 TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
             }
-            Button(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts)) }
         }
     }
 }
