@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -327,17 +326,16 @@ private fun ExerciseCard(
             OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
                 Text(stringResource(R.string.edit))
             }
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onMoveUp, enabled = canMoveUp) {
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                TextButton(onClick = onMoveUp, modifier = Modifier.weight(1f), enabled = canMoveUp) {
                     Text(stringResource(R.string.move_up))
                 }
-                TextButton(onClick = onMoveDown, enabled = canMoveDown) {
+                TextButton(onClick = onMoveDown, modifier = Modifier.weight(1f), enabled = canMoveDown) {
                     Text(stringResource(R.string.move_down))
                 }
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = onRemove) {
-                    Text(stringResource(R.string.remove))
-                }
+            }
+            TextButton(onClick = onRemove, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.remove))
             }
         }
     }

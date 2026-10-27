@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -154,12 +154,21 @@ fun HomeScreen(
             Text(stringResource(R.string.home_description), Modifier.padding(bottom = 16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             uiState.activeSession?.let { active ->
                 Card(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.active_session_title), style = MaterialTheme.typography.titleMedium)
-                            Text(active.workoutName, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(Modifier.padding(16.dp)) {
+                        Text(stringResource(R.string.active_session_title), style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            active.workoutName,
+                            modifier = Modifier.padding(top = 4.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Button(
+                            onClick = onResumeActiveSession,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 12.dp),
+                        ) {
+                            Text(stringResource(R.string.resume_workout))
                         }
-                        Button(onClick = onResumeActiveSession) { Text(stringResource(R.string.resume_workout)) }
                     }
                 }
             }
@@ -221,12 +230,32 @@ private fun FolderCard(
             Button(onClick = onOpen, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
                 Text(stringResource(R.string.workouts))
             }
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
-                TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
+            OutlinedButton(
+                onClick = onDuplicate,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            ) {
+                Text(stringResource(R.string.duplicate))
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                TextButton(
+                    onClick = onMoveUp,
+                    modifier = Modifier.weight(1f),
+                    enabled = canMoveUp,
+                ) {
+                    Text(stringResource(R.string.move_up))
+                }
+                TextButton(
+                    onClick = onMoveDown,
+                    modifier = Modifier.weight(1f),
+                    enabled = canMoveDown,
+                ) {
+                    Text(stringResource(R.string.move_down))
+                }
+            }
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.delete))
             }
         }
     }

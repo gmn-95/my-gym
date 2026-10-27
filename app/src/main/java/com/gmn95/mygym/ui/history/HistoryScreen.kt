@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -102,16 +102,20 @@ fun HistoryScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.fillMaxWidth()) {
                     TextButton(onClick = onBack) {
                         Text(stringResource(R.string.back))
                     }
                     Text(
                         text = stringResource(R.string.history),
-                        modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.headlineMedium,
                     )
-                    TextButton(onClick = { showClearConfirmation = true }) {
+                    OutlinedButton(
+                        onClick = { showClearConfirmation = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                    ) {
                         Text(stringResource(R.string.clear_history))
                     }
                 }
@@ -205,7 +209,12 @@ private fun CompletedSessionCard(
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            TextButton(onClick = onDelete, modifier = Modifier.align(Alignment.End)) {
+            TextButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+            ) {
                 Text(stringResource(R.string.remove_from_history))
             }
         }

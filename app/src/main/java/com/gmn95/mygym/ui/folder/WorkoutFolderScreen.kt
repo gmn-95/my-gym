@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -75,9 +74,15 @@ fun WorkoutFolderScreen(
             Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
                 Text(uiState.folder?.name.orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                TextButton(onClick = { showRenameDialog = true }, enabled = uiState.folder != null) {
-                    Text(stringResource(R.string.edit))
-                }
+            }
+            OutlinedButton(
+                onClick = { showRenameDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                enabled = uiState.folder != null,
+            ) {
+                Text(stringResource(R.string.edit_folder))
             }
             Text(
                 stringResource(R.string.workouts),
@@ -181,12 +186,19 @@ private fun TrainingCard(
             OutlinedButton(onClick = onOpen, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Text(stringResource(R.string.edit))
             }
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
-                TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
+            OutlinedButton(onClick = onDuplicate, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text(stringResource(R.string.duplicate))
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                TextButton(onClick = onMoveUp, modifier = Modifier.weight(1f), enabled = canMoveUp) {
+                    Text(stringResource(R.string.move_up))
+                }
+                TextButton(onClick = onMoveDown, modifier = Modifier.weight(1f), enabled = canMoveDown) {
+                    Text(stringResource(R.string.move_down))
+                }
+            }
+            TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.delete))
             }
         }
     }
