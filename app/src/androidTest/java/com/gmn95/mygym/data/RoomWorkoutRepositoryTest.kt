@@ -136,6 +136,32 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun reordersFoldersAndKeepsOrderAfterDeletion() = runBlocking {
+        val firstId = repository.createFolder("A")
+        val secondId = repository.createFolder("B")
+        val thirdId = repository.createFolder("C")
+
+        repository.moveFolder(thirdId, -1)
+        repository.moveFolder(thirdId, -1)
+
+        assertEquals(
+            listOf("C", "A", "B"),
+            repository.observeFolders().first().map { it.name },
+        )
+
+        repository.deleteFolder(firstId)
+
+        assertEquals(
+            listOf("C", "B"),
+            repository.observeFolders().first().map { it.name },
+        )
+        assertEquals(
+            listOf(thirdId, secondId),
+            repository.observeFolders().first().map { it.id },
+        )
+    }
+
+    @Test
     fun workoutSummaryUsesOnlyCompletedSessionsForAverageDuration() = runBlocking {
         val workoutId = repository.createWorkout("A — Superiores")
         database.workoutSessionDao().insert(

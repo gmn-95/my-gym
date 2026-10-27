@@ -45,6 +45,7 @@ fun HomeScreen(
     onCreateFolder: (String) -> Unit,
     onOpenFolder: (String) -> Unit,
     onDuplicateFolder: (String, String) -> Unit,
+    onMoveFolder: (String, Int) -> Unit,
     onDeleteFolder: (String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenCalendar: () -> Unit,
@@ -107,11 +108,16 @@ fun HomeScreen(
                 uiState.folders.isEmpty() -> EmptyFolders()
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(uiState.folders, key = WorkoutFolderSummary::id) { folder ->
+                        val folderIndex = uiState.folders.indexOf(folder)
                         val duplicateName = stringResource(R.string.folder_copy_name, folder.name)
                         FolderCard(
                             folder = folder,
                             onOpen = { onOpenFolder(folder.id) },
                             onDuplicate = { onDuplicateFolder(folder.id, duplicateName) },
+                            canMoveUp = folderIndex > 0,
+                            canMoveDown = folderIndex < uiState.folders.lastIndex,
+                            onMoveUp = { onMoveFolder(folder.id, -1) },
+                            onMoveDown = { onMoveFolder(folder.id, 1) },
                             onDelete = { folderToDelete = folder },
                         )
                     }
@@ -141,6 +147,10 @@ private fun FolderCard(
     folder: WorkoutFolderSummary,
     onOpen: () -> Unit,
     onDuplicate: () -> Unit,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
@@ -148,6 +158,10 @@ private fun FolderCard(
             Text(folder.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(pluralStringResource(R.plurals.workout_count, folder.workoutCount, folder.workoutCount), Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
+                TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
                 TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
             }

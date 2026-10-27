@@ -269,6 +269,7 @@ fun MyGymApp() {
                 },
                 onOpenFolder = { selectedFolderId = it },
                 onDuplicateFolder = homeViewModel::duplicateFolder,
+                onMoveFolder = homeViewModel::moveFolder,
                 onOpenHistory = {
                     showCalendar = false
                     showHistory = true

@@ -138,6 +138,20 @@ class RoomWorkoutRepository(
         }
     }
 
+    override suspend fun moveFolder(id: String, offset: Int) {
+        require(offset == -1 || offset == 1)
+        database.withTransaction {
+            val folders = workoutFolderDao.getAll()
+            val currentIndex = folders.indexOfFirst { it.id == id }
+            if (currentIndex == -1) return@withTransaction
+            val targetIndex = currentIndex + offset
+            if (targetIndex !in folders.indices) return@withTransaction
+
+            workoutFolderDao.updatePosition(folders[currentIndex].id, targetIndex)
+            workoutFolderDao.updatePosition(folders[targetIndex].id, currentIndex)
+        }
+    }
+
     override suspend fun deleteFolder(id: String) {
         database.withTransaction {
             val folder = workoutFolderDao.getById(id) ?: return@withTransaction

@@ -19,6 +19,8 @@ interface WorkoutRepository {
     /** Duplica os treinos e suas configurações, sem copiar sessões históricas. */
     suspend fun duplicateFolder(id: String, duplicateName: String): String?
 
+    suspend fun moveFolder(id: String, offset: Int)
+
     suspend fun deleteFolder(id: String)
 
     suspend fun createWorkout(folderId: String, name: String): String

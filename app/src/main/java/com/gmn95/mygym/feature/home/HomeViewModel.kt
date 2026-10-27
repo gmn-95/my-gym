@@ -67,6 +67,12 @@ class HomeViewModel(
         }
     }
 
+    fun moveFolder(id: String, offset: Int) {
+        launchOperation {
+            workoutRepository.moveFolder(id, offset)
+        }
+    }
+
     fun clearMessage() {
         message.value = null
     }
