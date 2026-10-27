@@ -40,7 +40,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
-import com.gmn95.mygym.data.repository.CustomExercise
 import com.gmn95.mygym.data.repository.WorkoutExercise
 import com.gmn95.mygym.domain.WorkoutInputValidator
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
@@ -52,8 +51,8 @@ fun WorkoutEditorScreen(
     onBack: () -> Unit,
     onRenameWorkout: (String) -> Unit,
     onSearchCatalog: () -> Unit,
+    onOpenSavedExercises: () -> Unit,
     onCreateAndAddExercise: (String, String?) -> Unit,
-    onAddExistingExercise: (String) -> Unit,
     onUpdateExercise: (String, WorkoutItemConfiguration) -> Unit,
     onRemoveExercise: (String) -> Unit,
     onMoveExercise: (String, Int) -> Unit,
@@ -222,15 +221,14 @@ fun WorkoutEditorScreen(
 
     if (showAddExerciseDialog) {
         AddExerciseDialog(
-            existingExercises = uiState.customExercises,
             onDismiss = { showAddExerciseDialog = false },
             onSearchCatalog = {
                 showAddExerciseDialog = false
                 onSearchCatalog()
             },
-            onAddExisting = { id ->
-                onAddExistingExercise(id)
+            onOpenSavedExercises = {
                 showAddExerciseDialog = false
+                onOpenSavedExercises()
             },
             onCreate = { name, notes ->
                 onCreateAndAddExercise(name, notes)
@@ -347,10 +345,9 @@ private fun ExerciseCard(
 
 @Composable
 private fun AddExerciseDialog(
-    existingExercises: List<CustomExercise>,
     onDismiss: () -> Unit,
     onSearchCatalog: () -> Unit,
-    onAddExisting: (String) -> Unit,
+    onOpenSavedExercises: () -> Unit,
     onCreate: (String, String?) -> Unit,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
@@ -368,41 +365,19 @@ private fun AddExerciseDialog(
                 Button(onClick = onSearchCatalog, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.search_catalog))
                 }
-                if (existingExercises.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.reuse_exercise),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    existingExercises.forEach { exercise ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(exercise.name)
-                                exercise.notes?.let {
-                                    Text(
-                                        text = it,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                            }
-                            TextButton(onClick = { onAddExisting(exercise.id) }) {
-                                Text(stringResource(R.string.add))
-                            }
-                        }
-                    }
-                    Text(
-                        text = stringResource(R.string.or_create_exercise),
-                        modifier = Modifier.padding(top = 16.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
+                OutlinedButton(
+                    onClick = onOpenSavedExercises,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                ) {
+                    Text(stringResource(R.string.choose_saved_exercise))
                 }
+                Text(
+                    text = stringResource(R.string.or_create_exercise),
+                    modifier = Modifier.padding(top = 16.dp),
+                    style = MaterialTheme.typography.titleSmall,
+                )
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },

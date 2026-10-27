@@ -90,8 +90,15 @@
     <string name="move_down">Descer</string>
     <string name="edit">Editar</string>
     <string name="remove">Remover</string>
-    <string name="reuse_exercise">Adicionar um exercício manual existente</string>
-    <string name="add">Adicionar</string>
+    <string name="choose_saved_exercise">Escolher exercício salvo</string>
+    <string name="saved_exercises">Exercícios salvos</string>
+    <string name="saved_exercises_description">Escolha um para adicioná-lo a este treino. Eles continuam disponíveis para outros treinos.</string>
+    <string name="saved_exercises_search">Buscar exercícios salvos</string>
+    <string name="no_saved_exercises_title">Ainda não há exercícios salvos</string>
+    <string name="no_saved_exercises_description">Crie primeiro um exercício manual e ele ficará disponível aqui.</string>
+    <string name="no_search_results">Nenhum exercício encontrado</string>
+    <string name="no_search_results_description">Tente outro nome ou limpe a busca.</string>
+    <string name="add_to_workout">Adicionar ao treino</string>
     <string name="or_create_exercise">Ou criar um exercício manual</string>
     <string name="search_catalog">Buscar no catálogo wger</string>
     <string name="catalog_title">Catálogo de exercícios wger</string>

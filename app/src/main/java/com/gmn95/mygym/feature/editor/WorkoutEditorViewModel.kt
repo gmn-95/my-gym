@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.gmn95.mygym.data.repository.CustomExercise
 import com.gmn95.mygym.data.repository.Workout
 import com.gmn95.mygym.data.repository.WorkoutRepository
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
@@ -18,7 +17,6 @@ import kotlinx.coroutines.launch
 data class WorkoutEditorUiState(
     val isLoading: Boolean = true,
     val workout: Workout? = null,
-    val customExercises: List<CustomExercise> = emptyList(),
     val operationFailed: Boolean = false,
 )
 
@@ -30,13 +28,11 @@ class WorkoutEditorViewModel(
 
     val uiState: StateFlow<WorkoutEditorUiState> = combine(
         repository.observeWorkout(workoutId),
-        repository.observeCustomExercises(),
         operationFailed,
-    ) { workout, customExercises, failed ->
+    ) { workout, failed ->
         WorkoutEditorUiState(
             isLoading = false,
             workout = workout,
-            customExercises = customExercises,
             operationFailed = failed,
         )
     }.stateIn(
@@ -54,12 +50,6 @@ class WorkoutEditorViewModel(
     fun createAndAddExercise(name: String, notes: String?) {
         launchOperation {
             repository.createAndAddExercise(workoutId, name, notes)
-        }
-    }
-
-    fun addExistingExercise(customExerciseId: String) {
-        launchOperation {
-            repository.addExistingExercise(workoutId, customExerciseId)
         }
     }
 

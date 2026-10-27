@@ -90,8 +90,15 @@
     <string name="move_down">Down</string>
     <string name="edit">Edit</string>
     <string name="remove">Remove</string>
-    <string name="reuse_exercise">Add an existing manual exercise</string>
-    <string name="add">Add</string>
+    <string name="choose_saved_exercise">Choose a saved exercise</string>
+    <string name="saved_exercises">Saved exercises</string>
+    <string name="saved_exercises_description">Choose one to add it to this workout. They stay available for other workouts.</string>
+    <string name="saved_exercises_search">Search saved exercises</string>
+    <string name="no_saved_exercises_title">No saved exercises yet</string>
+    <string name="no_saved_exercises_description">Create a manual exercise first and it will be available here.</string>
+    <string name="no_search_results">No matching exercises</string>
+    <string name="no_search_results_description">Try a different name or clear the search.</string>
+    <string name="add_to_workout">Add to workout</string>
     <string name="or_create_exercise">Or create a manual exercise</string>
     <string name="search_catalog">Search wger catalog</string>
     <string name="catalog_title">wger exercise catalog</string>
