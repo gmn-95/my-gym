@@ -39,6 +39,9 @@ interface SessionRepository {
 
     suspend fun cancelActiveSession()
 
+    /** Remove somente uma sessão concluída e seus snapshots históricos associados. */
+    suspend fun deleteCompletedSession(sessionId: String)
+
     suspend fun checkpointActiveTimers()
 
     suspend fun recoverAfterRebootIfNeeded()

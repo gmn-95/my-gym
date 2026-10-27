@@ -25,6 +25,9 @@ interface SessionExerciseDao {
     @Query("DELETE FROM session_exercises")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM session_exercises WHERE session_id = :sessionId")
+    suspend fun deleteBySession(sessionId: String)
+
     @Insert
     suspend fun insertAll(exercises: List<SessionExerciseEntity>)
 

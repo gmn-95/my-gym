@@ -303,6 +303,19 @@ class RoomSessionRepository(
         finishActiveSession(WorkoutSessionStatus.CANCELLED)
     }
 
+    override suspend fun deleteCompletedSession(sessionId: String) {
+        database.withTransaction {
+            val session = sessionDao.getById(sessionId) ?: return@withTransaction
+            if (session.status != WorkoutSessionStatus.COMPLETED.name) return@withTransaction
+
+            // Os snapshots dependem da sessão e precisam ser apagados antes dela.
+            restTimerDao.deleteBySession(sessionId)
+            sessionExerciseSetDao.deleteBySession(sessionId)
+            sessionExerciseDao.deleteBySession(sessionId)
+            sessionDao.deleteCompletedById(sessionId)
+        }
+    }
+
     override suspend fun checkpointActiveTimers() {
         database.withTransaction {
             val session = sessionDao.getActive() ?: return@withTransaction

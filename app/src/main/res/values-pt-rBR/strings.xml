@@ -61,6 +61,9 @@
     <string name="history_exercises">Exercícios</string>
     <string name="history_exercise_completed">Concluído</string>
     <string name="history_exercise_not_completed">Não concluído</string>
+    <string name="remove_from_history">Remover do histórico</string>
+    <string name="delete_history_session_title">Remover treino do histórico?</string>
+    <string name="delete_history_session_message">“%1$s” e seus detalhes salvos serão removidos permanentemente.</string>
     <string name="duplicate">Duplicar</string>
     <string name="no_workouts_title">Nenhuma ficha criada</string>
     <string name="no_workouts_description">Use “Nova ficha” para criar seu primeiro treino.</string>

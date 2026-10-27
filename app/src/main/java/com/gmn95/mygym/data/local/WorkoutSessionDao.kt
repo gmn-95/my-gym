@@ -48,6 +48,9 @@ interface WorkoutSessionDao {
     @Query("DELETE FROM workout_sessions")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM workout_sessions WHERE id = :sessionId AND status = 'COMPLETED'")
+    suspend fun deleteCompletedById(sessionId: String)
+
     @Query(
         """
         SELECT

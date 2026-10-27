@@ -17,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -110,6 +111,32 @@ class RoomSessionRepositoryTest {
         assertEquals("A — Superiores", details.workoutName)
         assertEquals(listOf("Supino"), details.exercises.map { it.name })
         assertEquals(true, details.exercises.single().isCompleted)
+    }
+
+    @Test
+    fun deletesOnlyCompletedSessionAndItsSnapshots() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("Histórico removível")
+        workoutRepository.createAndAddExercise(workoutId, "Supino", null)
+        val completedSessionId = sessionRepository.startSession(workoutId)
+        sessionRepository.completeActiveSession()
+        val completedExerciseIds = database.sessionExerciseDao().getAll()
+            .filter { it.sessionId == completedSessionId }
+            .map { it.id }
+
+        val activeSessionId = sessionRepository.startSession(workoutId)
+        sessionRepository.deleteCompletedSession(completedSessionId)
+
+        assertNull(database.workoutSessionDao().getById(completedSessionId))
+        assertTrue(
+            database.sessionExerciseDao().getAll()
+                .none { it.sessionId == completedSessionId },
+        )
+        assertTrue(
+            database.sessionExerciseSetDao().getAll()
+                .none { it.sessionExerciseId in completedExerciseIds },
+        )
+        assertEquals(activeSessionId, sessionRepository.observeActiveSession().first()!!.id)
+        assertTrue(sessionRepository.observeCompletedSessions().first().isEmpty())
     }
 
     @Test

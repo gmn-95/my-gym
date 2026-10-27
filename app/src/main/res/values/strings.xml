@@ -61,6 +61,9 @@
     <string name="history_exercises">Exercises</string>
     <string name="history_exercise_completed">Completed</string>
     <string name="history_exercise_not_completed">Not completed</string>
+    <string name="remove_from_history">Remove from history</string>
+    <string name="delete_history_session_title">Remove workout from history?</string>
+    <string name="delete_history_session_message">“%1$s” and its saved workout details will be permanently removed.</string>
     <string name="duplicate">Duplicate</string>
     <string name="no_workouts_title">No workouts yet</string>
     <string name="no_workouts_description">Use “New workout” to create your first plan.</string>

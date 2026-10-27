@@ -20,6 +20,9 @@ interface SessionRestTimerDao {
     @Query("DELETE FROM session_rest_timers")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM session_rest_timers WHERE session_id = :sessionId")
+    suspend fun deleteBySession(sessionId: String)
+
     @Upsert
     suspend fun upsert(timer: SessionRestTimerEntity)
 

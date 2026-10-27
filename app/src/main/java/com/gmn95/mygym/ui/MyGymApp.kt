@@ -158,6 +158,8 @@ fun MyGymApp() {
                     uiState = uiState,
                     onBack = { showHistory = false },
                     onOpenSession = { selectedHistorySessionId = it },
+                    onDeleteSession = historyViewModel::deleteCompletedSession,
+                    onMessageShown = historyViewModel::clearMessage,
                 )
             }
 

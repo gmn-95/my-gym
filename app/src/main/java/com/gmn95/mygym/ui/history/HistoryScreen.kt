@@ -11,18 +11,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.CompletedWorkoutSessionSummary
+import com.gmn95.mygym.feature.history.HistoryMessage
 import com.gmn95.mygym.feature.history.HistoryUiState
 import java.text.DateFormat
 import java.util.Date
@@ -32,12 +42,27 @@ fun HistoryScreen(
     uiState: HistoryUiState,
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit,
+    onDeleteSession: (String) -> Unit,
+    onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = onBack)
-    when {
+    var sessionToDelete by remember { mutableStateOf<CompletedWorkoutSessionSummary?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+    val message = when (uiState.message) {
+        HistoryMessage.OPERATION_FAILED -> stringResource(R.string.operation_error)
+        null -> null
+    }
+    LaunchedEffect(message) {
+        if (message != null) {
+            snackbar.showSnackbar(message)
+            onMessageShown()
+        }
+    }
+    androidx.compose.material3.Scaffold(snackbarHost = { SnackbarHost(snackbar) }) { padding ->
+        when {
         uiState.isLoading -> Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().padding(padding),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator()
@@ -46,6 +71,7 @@ fun HistoryScreen(
         uiState.sessions.isEmpty() -> Column(
             modifier = modifier
                 .fillMaxSize()
+                .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
@@ -68,7 +94,7 @@ fun HistoryScreen(
         }
 
         else -> LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -85,9 +111,31 @@ fun HistoryScreen(
                 CompletedSessionCard(
                     session = session,
                     onClick = { onOpenSession(session.id) },
+                    onDelete = { sessionToDelete = session },
                 )
             }
         }
+        }
+    }
+    sessionToDelete?.let { session ->
+        AlertDialog(
+            onDismissRequest = { sessionToDelete = null },
+            title = { Text(stringResource(R.string.delete_history_session_title)) },
+            text = { Text(stringResource(R.string.delete_history_session_message, session.workoutName)) },
+            confirmButton = {
+                Button(onClick = {
+                    onDeleteSession(session.id)
+                    sessionToDelete = null
+                }) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { sessionToDelete = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 }
 
@@ -95,6 +143,7 @@ fun HistoryScreen(
 private fun CompletedSessionCard(
     session: CompletedWorkoutSessionSummary,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -127,6 +176,9 @@ private fun CompletedSessionCard(
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            TextButton(onClick = onDelete, modifier = Modifier.align(Alignment.End)) {
+                Text(stringResource(R.string.remove_from_history))
+            }
         }
     }
 }

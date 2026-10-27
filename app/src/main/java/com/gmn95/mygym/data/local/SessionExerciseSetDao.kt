@@ -31,6 +31,16 @@ interface SessionExerciseSetDao {
 
     @Query(
         """
+        DELETE FROM session_exercise_sets
+        WHERE session_exercise_id IN (
+            SELECT id FROM session_exercises WHERE session_id = :sessionId
+        )
+        """,
+    )
+    suspend fun deleteBySession(sessionId: String)
+
+    @Query(
+        """
         SELECT * FROM session_exercise_sets
         WHERE session_exercise_id = :sessionExerciseId
         ORDER BY position
