@@ -12,12 +12,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 
 data class ExerciseCatalogUiState(
     val query: String = "",
     val exercises: List<CatalogExercise> = emptyList(),
     val nextPageUrl: String? = null,
     val isLoading: Boolean = false,
+    val hasSuccessfulSearch: Boolean = false,
     val selectedExerciseId: String? = null,
     val message: CatalogMessage? = null,
 )
@@ -30,10 +33,21 @@ class ExerciseCatalogViewModel(
     private val workoutRepository: WorkoutRepository,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(ExerciseCatalogUiState())
+    private var searchJob: Job? = null
     val uiState: StateFlow<ExerciseCatalogUiState> = mutableUiState.asStateFlow()
 
     fun updateQuery(query: String) {
-        mutableUiState.value = mutableUiState.value.copy(query = query, message = null)
+        if (query == mutableUiState.value.query) return
+        searchJob?.cancel()
+        mutableUiState.value = mutableUiState.value.copy(
+            query = query,
+            exercises = emptyList(),
+            nextPageUrl = null,
+            isLoading = false,
+            hasSuccessfulSearch = false,
+            selectedExerciseId = null,
+            message = null,
+        )
     }
 
     fun search() {
@@ -72,18 +86,20 @@ class ExerciseCatalogViewModel(
 
     private fun loadPage(name: String, nextPageUrl: String?, append: Boolean) {
         if (mutableUiState.value.isLoading) return
-        viewModelScope.launch {
+        searchJob = viewModelScope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, message = null)
             runCatching { catalogRepository.search(name, nextPageUrl) }
                 .onSuccess { page ->
                     val current = mutableUiState.value
                     mutableUiState.value = current.copy(
-                        exercises = if (append) current.exercises + page.exercises else page.exercises,
+                        exercises = mergeCatalogExercises(current.exercises, page.exercises, append),
                         nextPageUrl = page.nextPageUrl,
                         isLoading = false,
+                        hasSuccessfulSearch = true,
                     )
                 }
                 .onFailure { error ->
+                    if (error is CancellationException) return@onFailure
                     val message = if ((error as? ExerciseCatalogException)?.reason ==
                         ExerciseCatalogException.Reason.RATE_LIMITED
                     ) {
@@ -108,3 +124,10 @@ class ExerciseCatalogViewModel(
         }
     }
 }
+
+internal fun mergeCatalogExercises(
+    current: List<CatalogExercise>,
+    incoming: List<CatalogExercise>,
+    append: Boolean,
+): List<CatalogExercise> = (if (append) current + incoming else incoming)
+    .distinctBy(CatalogExercise::id)

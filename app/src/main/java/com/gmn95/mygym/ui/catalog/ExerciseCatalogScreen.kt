@@ -95,7 +95,11 @@ fun ExerciseCatalogScreen(
             if (uiState.isLoading && uiState.exercises.isEmpty()) {
                 item { CircularProgressIndicator(Modifier.padding(top = 24.dp)) }
             }
-            if (!uiState.isLoading && uiState.query.isNotBlank() && uiState.exercises.isEmpty()) {
+            if (
+                !uiState.isLoading &&
+                uiState.hasSuccessfulSearch &&
+                uiState.exercises.isEmpty()
+            ) {
                 item {
                     Text(
                         stringResource(R.string.catalog_no_results),
