@@ -166,9 +166,17 @@ private fun TrainingCard(
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
                 TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
-                TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
-                TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
-                Button(onClick = onOpen) { Text(stringResource(R.string.edit)) }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = onDuplicate, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.duplicate), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                TextButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.delete), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Button(onClick = onOpen, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.edit), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
             Button(onClick = onStart, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) { Text(stringResource(R.string.start_workout)) }
         }
