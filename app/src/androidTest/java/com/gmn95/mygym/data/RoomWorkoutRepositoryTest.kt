@@ -8,6 +8,7 @@ import com.gmn95.mygym.data.local.MyGymDatabase
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import com.gmn95.mygym.data.backup.WorkoutBackupRepository
 import com.gmn95.mygym.data.repository.RoomWorkoutRepository
+import com.gmn95.mygym.data.repository.RoomSessionRepository
 import com.gmn95.mygym.data.repository.AppSettingsRepository
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -159,6 +161,27 @@ class RoomWorkoutRepositoryTest {
             listOf(thirdId, secondId),
             repository.observeFolders().first().map { it.id },
         )
+    }
+
+    @Test
+    fun deletingFolderKeepsCompletedSessionSnapshotAvailable() = runBlocking {
+        val folderId = repository.createFolder("Rotina antiga")
+        val workoutId = repository.createWorkout(folderId, "A — Superiores")
+        repository.createAndAddExercise(workoutId, "Supino", "Barra")
+        val sessionRepository = RoomSessionRepository(
+            database = database,
+            clock = TestSessionClock,
+            idFactory = { "id-${nextId++}" },
+        )
+
+        val sessionId = sessionRepository.startSession(workoutId)
+        sessionRepository.completeActiveSession()
+        repository.deleteFolder(folderId)
+
+        assertNull(repository.observeFolder(folderId).first())
+        val history = sessionRepository.observeCompletedSession(sessionId).first()!!
+        assertEquals("A — Superiores", history.workoutName)
+        assertEquals(listOf("Supino"), history.exercises.map { it.name })
     }
 
     @Test
