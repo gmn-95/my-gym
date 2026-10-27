@@ -86,6 +86,16 @@ fun SettingsScreen(
                 selected = settings.languageMode == SettingsViewModel.LANGUAGE_PORTUGUESE,
                 onClick = { onLanguageSelected(SettingsViewModel.LANGUAGE_PORTUGUESE) },
             )
+            Text(
+                text = stringResource(R.string.catalog_credits_title),
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = stringResource(R.string.catalog_attribution),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }

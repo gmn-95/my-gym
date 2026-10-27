@@ -11,6 +11,7 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Room/SQLite com exportação do esquema habilitada.
 - Fichas que agrupam múltiplos treinos, com criação, edição, duplicação e exclusão confirmada dos treinos.
 - Exercícios manuais reutilizáveis em diferentes treinos.
+- Busca sob demanda na ExerciseDB, com detalhes, instruções e GIF remoto quando disponível.
 - Séries, repetições fixas ou em faixa e descanso em minutos/segundos.
 - Reordenação e remoção dos exercícios de um treino.
 - Sessão com snapshot do treino, conclusão individual de cada série e apenas um treino ativo por vez.
@@ -21,10 +22,10 @@ Aplicativo Android nativo e offline-first para organizar fichas de musculação 
 - Descanso independente com iniciar, pausar, continuar, reiniciar e encerrar.
 - Recuperação da sessão após recriação da tela ou encerramento do processo.
 - `applicationId` definitivo: `com.gmn95.mygym`.
-- Versão atual: `versionCode 7` / `versionName 0.6.1`.
+- Versão atual: `versionCode 8` / `versionName 0.7.0`.
 - `minSdk 26`, `targetSdk 37` e `compileSdk 37.0`.
 
-Integração com a ExerciseDB ainda não faz parte desta etapa. As sessões persistidas alimentam o calendário, a lista de histórico e a duração média dos treinos.
+As sessões persistidas alimentam o calendário, a lista de histórico e a duração média dos treinos.
 
 ## Uso atual
 
@@ -32,16 +33,23 @@ Integração com a ExerciseDB ainda não faz parte desta etapa. As sessões pers
 2. Abra a ficha, use **Adicionar treino** e informe um nome, como `A — Superiores`.
 3. Abra o treino e use **Adicionar exercício**.
 4. Crie um exercício manual com nome e observações opcionais, ou reutilize um exercício já cadastrado.
-5. Use **Editar** para definir séries, repetições e descanso, e **Subir** e **Descer** para alterar a ordem.
-6. Um treino pode ser aberto, duplicado ou excluído dentro da ficha. A exclusão sempre exige confirmação.
-7. Use **Iniciar treino** para criar uma sessão baseada em um snapshot do treino.
-8. Durante o treino, use **Mostrar séries** para abrir os detalhes de um exercício. Ao marcar uma série, o descanso configurado começa automaticamente; também é possível marcar ou desmarcar todas as séries pelo controle **Exercício concluído**.
-9. Após concluir treinos, a ficha passa a mostrar a duração média ativa de cada treino. Sessões canceladas não entram nesse cálculo.
-10. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que o treino original tenha sido excluído.
-11. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
-12. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
-13. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
-14. Em **Configurações**, escolha o tema e o idioma. As preferências ficam no Room e também são incluídas no backup JSON.
+5. Como alternativa, toque em **Buscar no catálogo ExerciseDB**, pesquise pelo nome e abra um resultado para consultar GIF e instruções antes de adicioná-lo.
+6. Use **Editar** para definir séries, repetições e descanso, e **Subir** e **Descer** para alterar a ordem.
+7. Um treino pode ser aberto, duplicado ou excluído dentro da ficha. A exclusão sempre exige confirmação.
+8. Use **Iniciar treino** para criar uma sessão baseada em um snapshot do treino.
+9. Durante o treino, use **Mostrar séries** para abrir os detalhes de um exercício. Ao marcar uma série, o descanso configurado começa automaticamente; também é possível marcar ou desmarcar todas as séries pelo controle **Exercício concluído**.
+10. Após concluir treinos, a ficha passa a mostrar a duração média ativa de cada treino. Sessões canceladas não entram nesse cálculo.
+11. Use **Histórico** na tela inicial para consultar as sessões concluídas e toque em uma delas para ver os exercícios do snapshot, mesmo que o treino original tenha sido excluído.
+12. Use **Calendário** para navegar pelos meses; dias destacados possuem sessões concluídas e podem ser selecionados.
+13. Use **Finalizar treino** para manter a sessão concluída ou **Cancelar treino** para encerrá-la sem tratá-la futuramente como treino realizado.
+14. Em **Backup**, exporte os dados para JSON antes de reinstalar ou restaurar o app. A importação valida o arquivo, mostra um resumo e substitui os dados somente após confirmação.
+15. Em **Configurações**, escolha o tema e o idioma. As preferências ficam no Room e também são incluídas no backup JSON.
+
+## ExerciseDB
+
+O catálogo usa a versão gratuita da ExerciseDB somente para buscas iniciadas pelo usuário. A API oferece até 25 resultados por chamada, paginação por cursor, GIFs em 180p e limites de requisição rigorosos. O uso é permitido para projetos pessoais e não comerciais com atribuição à AscendAPI.
+
+O app não grava dados, instruções ou GIFs remotos no Room, no backup JSON ou no cache de disco. Ao adicionar um resultado, salva apenas o nome escolhido como exercício local para que o treino continue funcionando offline. A mídia permanece remota e pode não estar disponível sem conexão. Consulte os termos atuais em [ExerciseDB Free V1](https://oss.exercisedb.dev/docs).
 
 ## Comportamento dos cronômetros
 

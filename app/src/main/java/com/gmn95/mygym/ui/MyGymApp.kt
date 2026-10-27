@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.gmn95.mygym.MyGymApplication
 import com.gmn95.mygym.feature.editor.WorkoutEditorViewModel
+import com.gmn95.mygym.feature.catalog.ExerciseCatalogViewModel
 import com.gmn95.mygym.feature.folder.WorkoutFolderViewModel
 import com.gmn95.mygym.feature.backup.BackupViewModel
 import com.gmn95.mygym.feature.home.HomeViewModel
@@ -25,6 +26,7 @@ import com.gmn95.mygym.feature.history.HistoryViewModel
 import com.gmn95.mygym.feature.history.HistoryDetailViewModel
 import com.gmn95.mygym.feature.session.SessionViewModel
 import com.gmn95.mygym.ui.editor.WorkoutEditorScreen
+import com.gmn95.mygym.ui.catalog.ExerciseCatalogScreen
 import com.gmn95.mygym.ui.backup.BackupScreen
 import com.gmn95.mygym.ui.history.HistoryScreen
 import com.gmn95.mygym.ui.history.HistoryDetailScreen
@@ -67,6 +69,7 @@ fun MyGymApp() {
             contentColor = MaterialTheme.colorScheme.onBackground,
         ) {
             var selectedWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
+            var catalogWorkoutId by rememberSaveable { mutableStateOf<String?>(null) }
             var selectedFolderId by rememberSaveable { mutableStateOf<String?>(null) }
             var showActiveSession by rememberSaveable { mutableStateOf(false) }
             var showHistory by rememberSaveable { mutableStateOf(false) }
@@ -171,6 +174,31 @@ fun MyGymApp() {
                 )
             }
 
+            catalogWorkoutId != null -> {
+                val currentCatalogWorkoutId = requireNotNull(catalogWorkoutId)
+                val catalogViewModel: ExerciseCatalogViewModel = viewModel(
+                    key = "exercise-catalog-$currentCatalogWorkoutId",
+                    factory = ExerciseCatalogViewModel.factory(
+                        workoutId = currentCatalogWorkoutId,
+                        catalogRepository = application.exerciseCatalogRepository,
+                        workoutRepository = application.workoutRepository,
+                    ),
+                )
+                val uiState by catalogViewModel.uiState.collectAsStateWithLifecycle()
+                ExerciseCatalogScreen(
+                    uiState = uiState,
+                    onBack = { catalogWorkoutId = null },
+                    onQueryChange = catalogViewModel::updateQuery,
+                    onSearch = catalogViewModel::search,
+                    onLoadNextPage = catalogViewModel::loadNextPage,
+                    onSelectExercise = catalogViewModel::selectExercise,
+                    onAddExercise = { exercise ->
+                        catalogViewModel.addExercise(exercise) { catalogWorkoutId = null }
+                    },
+                    onMessageShown = catalogViewModel::clearMessage,
+                )
+            }
+
             workoutId != null -> {
             val editorViewModel: WorkoutEditorViewModel = viewModel(
                 key = "workout-editor-$workoutId",
@@ -184,6 +212,7 @@ fun MyGymApp() {
                 uiState = uiState,
                 onBack = { selectedWorkoutId = null },
                 onRenameWorkout = editorViewModel::renameWorkout,
+                onSearchCatalog = { catalogWorkoutId = workoutId },
                 onCreateAndAddExercise = editorViewModel::createAndAddExercise,
                 onAddExistingExercise = editorViewModel::addExistingExercise,
                 onUpdateExercise = editorViewModel::updateExercise,

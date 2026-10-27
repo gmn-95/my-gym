@@ -50,6 +50,7 @@ fun WorkoutEditorScreen(
     uiState: WorkoutEditorUiState,
     onBack: () -> Unit,
     onRenameWorkout: (String) -> Unit,
+    onSearchCatalog: () -> Unit,
     onCreateAndAddExercise: (String, String?) -> Unit,
     onAddExistingExercise: (String) -> Unit,
     onUpdateExercise: (String, WorkoutItemConfiguration) -> Unit,
@@ -208,6 +209,10 @@ fun WorkoutEditorScreen(
         AddExerciseDialog(
             existingExercises = uiState.customExercises,
             onDismiss = { showAddExerciseDialog = false },
+            onSearchCatalog = {
+                showAddExerciseDialog = false
+                onSearchCatalog()
+            },
             onAddExisting = { id ->
                 onAddExistingExercise(id)
                 showAddExerciseDialog = false
@@ -333,6 +338,7 @@ private fun ExerciseCard(
 private fun AddExerciseDialog(
     existingExercises: List<CustomExercise>,
     onDismiss: () -> Unit,
+    onSearchCatalog: () -> Unit,
     onAddExisting: (String) -> Unit,
     onCreate: (String, String?) -> Unit,
 ) {
@@ -348,6 +354,9 @@ private fun AddExerciseDialog(
                     .heightIn(max = 520.dp)
                     .verticalScroll(rememberScrollState()),
             ) {
+                Button(onClick = onSearchCatalog, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.search_catalog))
+                }
                 if (existingExercises.isNotEmpty()) {
                     Text(
                         text = stringResource(R.string.reuse_exercise),
