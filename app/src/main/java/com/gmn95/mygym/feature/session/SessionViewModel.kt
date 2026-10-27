@@ -110,6 +110,10 @@ class SessionViewModel(
 
     fun resetRest() = launchOperation(repository::resetRest)
 
+    fun adjustRestBy(deltaMillis: Long) = launchOperation(
+        action = { repository.adjustRestBy(deltaMillis) },
+    )
+
     fun endRest() = launchOperation(repository::endRest)
 
     fun completeSession(onCompleted: () -> Unit) {

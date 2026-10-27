@@ -99,6 +99,7 @@ fun MyGymApp() {
                     onPauseRest = sessionViewModel::pauseRest,
                     onResumeRest = sessionViewModel::resumeRest,
                     onResetRest = sessionViewModel::resetRest,
+                    onAdjustRest = sessionViewModel::adjustRestBy,
                     onEndRest = sessionViewModel::endRest,
                     onCompleteSession = {
                         sessionViewModel.completeSession {
@@ -159,6 +160,7 @@ fun MyGymApp() {
                     onBack = { showHistory = false },
                     onOpenSession = { selectedHistorySessionId = it },
                     onDeleteSession = historyViewModel::deleteCompletedSession,
+                    onClearHistory = historyViewModel::clearCompletedSessions,
                     onMessageShown = historyViewModel::clearMessage,
                 )
             }

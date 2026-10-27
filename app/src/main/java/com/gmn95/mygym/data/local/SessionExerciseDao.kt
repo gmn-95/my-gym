@@ -28,6 +28,16 @@ interface SessionExerciseDao {
     @Query("DELETE FROM session_exercises WHERE session_id = :sessionId")
     suspend fun deleteBySession(sessionId: String)
 
+    @Query(
+        """
+        DELETE FROM session_exercises
+        WHERE session_id IN (
+            SELECT id FROM workout_sessions WHERE status = 'COMPLETED'
+        )
+        """,
+    )
+    suspend fun deleteAllForCompletedSessions()
+
     @Insert
     suspend fun insertAll(exercises: List<SessionExerciseEntity>)
 

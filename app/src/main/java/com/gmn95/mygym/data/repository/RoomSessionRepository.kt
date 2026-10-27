@@ -288,6 +288,29 @@ class RoomSessionRepository(
         }
     }
 
+    override suspend fun adjustRestBy(deltaMillis: Long) {
+        database.withTransaction {
+            val active = sessionDao.getActive() ?: return@withTransaction
+            val timer = restTimerDao.getBySession(active.id) ?: return@withTransaction
+            val adjustedRemaining = (remainingAt(timer) + deltaMillis).coerceAtLeast(0)
+            restTimerDao.upsert(
+                timer.copy(
+                    remainingAtAnchorMillis = adjustedRemaining,
+                    anchorElapsedRealtime = if (timer.status == RestTimerStatus.RUNNING.name) {
+                        clock.elapsedRealtimeMillis()
+                    } else {
+                        null
+                    },
+                    anchorBootCount = if (timer.status == RestTimerStatus.RUNNING.name) {
+                        clock.bootCount()
+                    } else {
+                        null
+                    },
+                ),
+            )
+        }
+    }
+
     override suspend fun endRest() {
         database.withTransaction {
             val active = sessionDao.getActive() ?: return@withTransaction
@@ -313,6 +336,14 @@ class RoomSessionRepository(
             sessionExerciseSetDao.deleteBySession(sessionId)
             sessionExerciseDao.deleteBySession(sessionId)
             sessionDao.deleteCompletedById(sessionId)
+        }
+    }
+
+    override suspend fun clearCompletedSessions() {
+        database.withTransaction {
+            sessionExerciseSetDao.deleteAllForCompletedSessions()
+            sessionExerciseDao.deleteAllForCompletedSessions()
+            sessionDao.deleteAllCompleted()
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,11 +44,13 @@ fun HistoryScreen(
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit,
     onDeleteSession: (String) -> Unit,
+    onClearHistory: () -> Unit,
     onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = onBack)
     var sessionToDelete by remember { mutableStateOf<CompletedWorkoutSessionSummary?>(null) }
+    var showClearConfirmation by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val message = when (uiState.message) {
         HistoryMessage.OPERATION_FAILED -> stringResource(R.string.operation_error)
@@ -99,13 +102,19 @@ fun HistoryScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                TextButton(onClick = onBack) {
-                    Text(stringResource(R.string.back))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onBack) {
+                        Text(stringResource(R.string.back))
+                    }
+                    Text(
+                        text = stringResource(R.string.history),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    TextButton(onClick = { showClearConfirmation = true }) {
+                        Text(stringResource(R.string.clear_history))
+                    }
                 }
-                Text(
-                    text = stringResource(R.string.history),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
             }
             items(uiState.sessions, key = CompletedWorkoutSessionSummary::id) { session ->
                 CompletedSessionCard(
@@ -132,6 +141,26 @@ fun HistoryScreen(
             },
             dismissButton = {
                 TextButton(onClick = { sessionToDelete = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+    if (showClearConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmation = false },
+            title = { Text(stringResource(R.string.clear_history_title)) },
+            text = { Text(stringResource(R.string.clear_history_message)) },
+            confirmButton = {
+                Button(onClick = {
+                    onClearHistory()
+                    showClearConfirmation = false
+                }) {
+                    Text(stringResource(R.string.clear_history))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirmation = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             },

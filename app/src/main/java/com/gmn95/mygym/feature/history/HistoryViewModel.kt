@@ -45,6 +45,13 @@ class HistoryViewModel(
         }
     }
 
+    fun clearCompletedSessions() {
+        viewModelScope.launch {
+            runCatching { sessionRepository.clearCompletedSessions() }
+                .onFailure { message.value = HistoryMessage.OPERATION_FAILED }
+        }
+    }
+
     fun clearMessage() {
         message.value = null
     }

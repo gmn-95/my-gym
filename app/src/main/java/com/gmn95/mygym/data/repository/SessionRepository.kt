@@ -33,6 +33,9 @@ interface SessionRepository {
 
     suspend fun resetRest()
 
+    /** Ajusta o descanso restante sem alterar a configuração do exercício. */
+    suspend fun adjustRestBy(deltaMillis: Long)
+
     suspend fun endRest()
 
     suspend fun completeActiveSession()
@@ -41,6 +44,9 @@ interface SessionRepository {
 
     /** Remove somente uma sessão concluída e seus snapshots históricos associados. */
     suspend fun deleteCompletedSession(sessionId: String)
+
+    /** Remove todas as sessões concluídas e seus snapshots, preservando a sessão ativa. */
+    suspend fun clearCompletedSessions()
 
     suspend fun checkpointActiveTimers()
 

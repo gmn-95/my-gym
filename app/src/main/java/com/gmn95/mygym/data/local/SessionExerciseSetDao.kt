@@ -41,6 +41,19 @@ interface SessionExerciseSetDao {
 
     @Query(
         """
+        DELETE FROM session_exercise_sets
+        WHERE session_exercise_id IN (
+            SELECT session_exercises.id
+            FROM session_exercises
+            INNER JOIN workout_sessions ON workout_sessions.id = session_exercises.session_id
+            WHERE workout_sessions.status = 'COMPLETED'
+        )
+        """,
+    )
+    suspend fun deleteAllForCompletedSessions()
+
+    @Query(
+        """
         SELECT * FROM session_exercise_sets
         WHERE session_exercise_id = :sessionExerciseId
         ORDER BY position

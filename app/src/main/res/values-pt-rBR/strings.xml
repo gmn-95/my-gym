@@ -64,6 +64,9 @@
     <string name="remove_from_history">Remover do histórico</string>
     <string name="delete_history_session_title">Remover treino do histórico?</string>
     <string name="delete_history_session_message">“%1$s” e seus detalhes salvos serão removidos permanentemente.</string>
+    <string name="clear_history">Limpar histórico</string>
+    <string name="clear_history_title">Limpar treinos concluídos?</string>
+    <string name="clear_history_message">Todos os treinos concluídos e seus detalhes salvos serão removidos permanentemente. Um treino em andamento não será afetado.</string>
     <string name="duplicate">Duplicar</string>
     <string name="no_workouts_title">Nenhuma ficha criada</string>
     <string name="no_workouts_description">Use “Nova ficha” para criar seu primeiro treino.</string>
@@ -142,7 +145,9 @@
     <string name="pause">Pausar</string>
     <string name="continue_action">Continuar</string>
     <string name="restart">Reiniciar</string>
-    <string name="end_rest">Encerrar</string>
+    <string name="end_rest">Concluir descanso</string>
+    <string name="rest_minus_ten_seconds">−10 s</string>
+    <string name="rest_plus_ten_seconds">+10 s</string>
     <string name="series_completion_hint">Ao concluir uma série, o descanso inicia automaticamente.</string>
     <string name="series_progress">%1$d de %2$d séries concluídas</string>
     <string name="series_number">Série %1$d</string>

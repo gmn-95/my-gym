@@ -140,6 +140,35 @@ class RoomSessionRepositoryTest {
     }
 
     @Test
+    fun clearsCompletedHistoryWithoutAffectingActiveSession() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("Histórico completo")
+        workoutRepository.createAndAddExercise(workoutId, "Remada", null)
+        val firstCompletedId = sessionRepository.startSession(workoutId)
+        sessionRepository.completeActiveSession()
+        val secondCompletedId = sessionRepository.startSession(workoutId)
+        sessionRepository.completeActiveSession()
+        val completedIds = setOf(firstCompletedId, secondCompletedId)
+        val completedExerciseIds = database.sessionExerciseDao().getAll()
+            .filter { it.sessionId in completedIds }
+            .map { it.id }
+        val activeSessionId = sessionRepository.startSession(workoutId)
+
+        sessionRepository.clearCompletedSessions()
+
+        assertTrue(completedIds.all { database.workoutSessionDao().getById(it) == null })
+        assertTrue(
+            database.sessionExerciseDao().getAll()
+                .none { it.sessionId in completedIds },
+        )
+        assertTrue(
+            database.sessionExerciseSetDao().getAll()
+                .none { it.sessionExerciseId in completedExerciseIds },
+        )
+        assertEquals(activeSessionId, sessionRepository.observeActiveSession().first()!!.id)
+        assertTrue(sessionRepository.observeCompletedSessions().first().isEmpty())
+    }
+
+    @Test
     fun restTimerPausesResumesAndRecoversPausedAfterReboot() = runBlocking {
         val workoutId = workoutRepository.createWorkout("B — Inferiores")
         workoutRepository.createAndAddExercise(workoutId, "Agachamento", null)
@@ -178,6 +207,24 @@ class RoomSessionRepositoryTest {
                 clock.bootCount(),
             ),
         )
+    }
+
+    @Test
+    fun adjustsRemainingRestWithoutChangingExerciseConfiguration() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("Descanso ajustável")
+        workoutRepository.createAndAddExercise(workoutId, "Leg press", null)
+        sessionRepository.startSession(workoutId)
+        val exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+
+        sessionRepository.setExerciseSetCompleted(exercise.id, exercise.series.first().id, true)
+        sessionRepository.adjustRestBy(10_000)
+
+        var timer = sessionRepository.observeActiveSession().first()!!.restTimer!!
+        assertEquals(70_000, timer.remainingAtAnchorMillis)
+        sessionRepository.adjustRestBy(-80_000)
+        timer = sessionRepository.observeActiveSession().first()!!.restTimer!!
+        assertEquals(0, timer.remainingAtAnchorMillis)
+        assertEquals(60, sessionRepository.observeActiveSession().first()!!.exercises.single().restSeconds)
     }
 
     @Test

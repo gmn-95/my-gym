@@ -53,6 +53,7 @@ fun SessionScreen(
     onPauseRest: () -> Unit,
     onResumeRest: () -> Unit,
     onResetRest: () -> Unit,
+    onAdjustRest: (Long) -> Unit,
     onEndRest: () -> Unit,
     onCompleteSession: () -> Unit,
     onCancelSession: () -> Unit,
@@ -141,20 +142,6 @@ fun SessionScreen(
                         )
                     }
 
-                    session.restTimer?.let { restTimer ->
-                        item {
-                            RestTimerCard(
-                                timer = restTimer,
-                                remainingMillis = uiState.restRemainingMillis ?: 0,
-                                onPause = onPauseRest,
-                                onResume = onResumeRest,
-                                onReset = onResetRest,
-                                onEnd = onEndRest,
-                                modifier = Modifier.padding(horizontal = 20.dp),
-                            )
-                        }
-                    }
-
                     item {
                         Text(
                             text = stringResource(R.string.planned_exercises),
@@ -200,6 +187,18 @@ fun SessionScreen(
                 }
             }
         }
+    }
+
+    uiState.session?.restTimer?.let { timer ->
+        RestTimerDialog(
+            timer = timer,
+            remainingMillis = uiState.restRemainingMillis ?: 0,
+            onPause = onPauseRest,
+            onResume = onResumeRest,
+            onReset = onResetRest,
+            onAdjust = onAdjustRest,
+            onEnd = onEndRest,
+        )
     }
 
     if (showCompleteConfirmation) {
@@ -294,25 +293,28 @@ private fun SessionTimerCard(
 }
 
 @Composable
-private fun RestTimerCard(
+private fun RestTimerDialog(
     timer: ActiveRestTimer,
     remainingMillis: Long,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onReset: () -> Unit,
+    onAdjust: (Long) -> Unit,
     onEnd: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val isFinished = remainingMillis <= 0
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
             Text(
                 text = stringResource(R.string.rest_for_exercise, timer.exerciseName),
                 style = MaterialTheme.typography.titleMedium,
             )
+        },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = formatRestDuration(remainingMillis),
-                modifier = Modifier.padding(top = 8.dp),
                 color = if (isFinished) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.displaySmall,
             )
@@ -325,9 +327,22 @@ private fun RestTimerCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { onAdjust(-10_000) },
+                    modifier = Modifier.weight(1f),
+                    enabled = !isFinished,
+                ) {
+                    Text(stringResource(R.string.rest_minus_ten_seconds))
+                }
+                Button(onClick = { onAdjust(10_000) }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.rest_plus_ten_seconds))
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 horizontalArrangement = Arrangement.End,
             ) {
                 if (!isFinished) {
@@ -346,12 +361,15 @@ private fun RestTimerCard(
                 TextButton(onClick = onReset) {
                     Text(stringResource(R.string.restart))
                 }
-                TextButton(onClick = onEnd) {
-                    Text(stringResource(R.string.end_rest))
-                }
             }
-        }
-    }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onEnd) {
+                Text(stringResource(R.string.end_rest))
+            }
+        },
+    )
 }
 
 @Composable
