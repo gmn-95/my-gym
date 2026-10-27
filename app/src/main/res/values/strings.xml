@@ -154,6 +154,9 @@
     <string name="current_series_repetitions">%1$s repetitions</string>
     <string name="previous_series">Previous set</string>
     <string name="complete_and_next_series">Complete and advance</string>
+    <string name="edit_active_exercise">Edit %1$s for this workout</string>
+    <string name="active_exercise_edit_hint">Changes apply only to the current workout. A rest already in progress keeps its current duration.</string>
+    <string name="cannot_reduce_completed_sets">The number of sets cannot be lower than the completed sets.</string>
     <string name="series_completion_hint">Checking a series starts its rest timer automatically.</string>
     <string name="series_progress">%1$d of %2$d sets completed</string>
     <string name="series_number">Set %1$d</string>

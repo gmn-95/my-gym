@@ -96,6 +96,7 @@ fun MyGymApp() {
                     onResumeSession = sessionViewModel::resumeSession,
                     onSetSeriesCompleted = sessionViewModel::setExerciseSetCompleted,
                     onSetExerciseCompleted = sessionViewModel::setExerciseCompleted,
+                    onUpdateActiveExercise = sessionViewModel::updateActiveExercise,
                     onPauseRest = sessionViewModel::pauseRest,
                     onResumeRest = sessionViewModel::resumeRest,
                     onResetRest = sessionViewModel::resetRest,

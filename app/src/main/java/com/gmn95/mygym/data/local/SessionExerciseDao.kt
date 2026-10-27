@@ -3,6 +3,7 @@ package com.gmn95.mygym.data.local
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,6 +41,9 @@ interface SessionExerciseDao {
 
     @Insert
     suspend fun insertAll(exercises: List<SessionExerciseEntity>)
+
+    @Update
+    suspend fun update(exercise: SessionExerciseEntity)
 
     @Query("UPDATE session_exercises SET is_completed = :isCompleted WHERE id = :id")
     suspend fun setCompleted(id: String, isCompleted: Boolean)

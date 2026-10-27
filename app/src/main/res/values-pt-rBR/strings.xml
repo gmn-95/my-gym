@@ -154,6 +154,9 @@
     <string name="current_series_repetitions">%1$s repetições</string>
     <string name="previous_series">Série anterior</string>
     <string name="complete_and_next_series">Concluir e avançar</string>
+    <string name="edit_active_exercise">Editar %1$s neste treino</string>
+    <string name="active_exercise_edit_hint">As mudanças valem apenas para este treino em andamento. Um descanso já iniciado mantém sua duração atual.</string>
+    <string name="cannot_reduce_completed_sets">A quantidade de séries não pode ser menor que as séries já concluídas.</string>
     <string name="series_completion_hint">Ao concluir uma série, o descanso inicia automaticamente.</string>
     <string name="series_progress">%1$d de %2$d séries concluídas</string>
     <string name="series_number">Série %1$d</string>

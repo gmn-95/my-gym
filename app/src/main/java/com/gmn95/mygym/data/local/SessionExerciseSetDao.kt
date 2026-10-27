@@ -54,6 +54,16 @@ interface SessionExerciseSetDao {
 
     @Query(
         """
+        DELETE FROM session_exercise_sets
+        WHERE session_exercise_id = :sessionExerciseId
+            AND is_completed = 0
+            AND position > :lastPositionToKeep
+        """,
+    )
+    suspend fun deleteIncompleteAfter(sessionExerciseId: String, lastPositionToKeep: Int)
+
+    @Query(
+        """
         SELECT * FROM session_exercise_sets
         WHERE session_exercise_id = :sessionExerciseId
         ORDER BY position

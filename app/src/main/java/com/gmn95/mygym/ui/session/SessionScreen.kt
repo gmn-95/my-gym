@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -16,6 +17,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -32,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,6 +45,8 @@ import com.gmn95.mygym.data.repository.RestTimerStatus
 import com.gmn95.mygym.data.repository.SessionSeriesProgress
 import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.feature.session.SessionUiState
+import com.gmn95.mygym.domain.WorkoutInputValidator
+import com.gmn95.mygym.domain.WorkoutItemConfiguration
 
 @Composable
 fun SessionScreen(
@@ -51,6 +56,7 @@ fun SessionScreen(
     onResumeSession: () -> Unit,
     onSetSeriesCompleted: (String, String, Boolean) -> Unit,
     onSetExerciseCompleted: (String, Boolean) -> Unit,
+    onUpdateActiveExercise: (String, WorkoutItemConfiguration) -> Unit,
     onPauseRest: () -> Unit,
     onResumeRest: () -> Unit,
     onResetRest: () -> Unit,
@@ -64,6 +70,7 @@ fun SessionScreen(
     BackHandler(onBack = onBack)
     var showCompleteConfirmation by rememberSaveable { mutableStateOf(false) }
     var showCancelConfirmation by rememberSaveable { mutableStateOf(false) }
+    var exerciseToEdit by remember { mutableStateOf<ActiveSessionExercise?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val operationError = stringResource(R.string.operation_error)
 
@@ -173,6 +180,7 @@ fun SessionScreen(
                             onExerciseCompletedChange = { completed ->
                                 onSetExerciseCompleted(exercise.id, completed)
                             },
+                            onEdit = { exerciseToEdit = exercise },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
                     }
@@ -212,6 +220,17 @@ fun SessionScreen(
             onReset = onResetRest,
             onAdjust = onAdjustRest,
             onEnd = onEndRest,
+        )
+    }
+
+    exerciseToEdit?.let { exercise ->
+        EditActiveExerciseDialog(
+            exercise = exercise,
+            onDismiss = { exerciseToEdit = null },
+            onConfirm = { configuration ->
+                onUpdateActiveExercise(exercise.id, configuration)
+                exerciseToEdit = null
+            },
         )
     }
 
@@ -449,6 +468,7 @@ private fun SessionExerciseCard(
     exercise: ActiveSessionExercise,
     onSeriesCompletedChange: (String, Boolean) -> Unit,
     onExerciseCompletedChange: (Boolean) -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isExpanded by rememberSaveable(exercise.id) { mutableStateOf(false) }
@@ -526,6 +546,9 @@ private fun SessionExerciseCard(
                         ),
                     )
                 }
+                TextButton(onClick = onEdit) {
+                    Text(stringResource(R.string.edit))
+                }
             }
             if (isExpanded) {
                 exercise.notes?.let { notes ->
@@ -561,6 +584,77 @@ private fun SessionExerciseCard(
             }
         }
     }
+}
+
+@Composable
+private fun EditActiveExerciseDialog(
+    exercise: ActiveSessionExercise,
+    onDismiss: () -> Unit,
+    onConfirm: (WorkoutItemConfiguration) -> Unit,
+) {
+    var sets by rememberSaveable(exercise.id) { mutableStateOf(exercise.sets.toString()) }
+    var repetitionsMin by rememberSaveable(exercise.id) { mutableStateOf(exercise.repetitionsMin.toString()) }
+    var repetitionsMax by rememberSaveable(exercise.id) {
+        mutableStateOf(exercise.repetitionsMax?.toString().orEmpty())
+    }
+    var restSeconds by rememberSaveable(exercise.id) { mutableStateOf(exercise.restSeconds.toString()) }
+    val configuration = WorkoutItemConfiguration(
+        sets = sets.toIntOrNull() ?: 0,
+        repetitionsMin = repetitionsMin.toIntOrNull() ?: 0,
+        repetitionsMax = repetitionsMax.toIntOrNull(),
+        restSeconds = restSeconds.toIntOrNull() ?: -1,
+    ).takeIf(WorkoutInputValidator::isValidConfiguration)
+    val completedSets = exercise.series.count { it.isCompleted }
+    val canSave = configuration != null && configuration.sets >= completedSets
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.edit_active_exercise, exercise.name)) },
+        text = {
+            Column {
+                Text(
+                    stringResource(R.string.active_exercise_edit_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                ActiveConfigurationField(sets, { sets = it }, stringResource(R.string.sets))
+                ActiveConfigurationField(
+                    repetitionsMin,
+                    { repetitionsMin = it },
+                    stringResource(R.string.repetitions_fixed_or_minimum),
+                )
+                ActiveConfigurationField(
+                    repetitionsMax,
+                    { repetitionsMax = it },
+                    stringResource(R.string.repetitions_maximum_optional),
+                )
+                ActiveConfigurationField(restSeconds, { restSeconds = it }, stringResource(R.string.rest_seconds_field))
+                if (configuration != null && configuration.sets < completedSets) {
+                    Text(stringResource(R.string.cannot_reduce_completed_sets), color = MaterialTheme.colorScheme.error)
+                } else if (configuration == null) {
+                    Text(stringResource(R.string.invalid_configuration), color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { configuration?.let(onConfirm) }, enabled = canSave) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
+@Composable
+private fun ActiveConfigurationField(value: String, onValueChange: (String) -> Unit, label: String) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { onValueChange(it.filter(Char::isDigit)) },
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        label = { Text(label) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+    )
 }
 
 private fun formatSessionDuration(durationMillis: Long): String {

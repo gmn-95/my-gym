@@ -11,6 +11,7 @@ import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.data.repository.seriesProgress
 import com.gmn95.mygym.domain.session.SessionClock
 import com.gmn95.mygym.domain.session.TimerMath
+import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -106,6 +107,13 @@ class SessionViewModel(
 
     fun setExerciseCompleted(exerciseId: String, completed: Boolean) = launchOperation(
         action = { repository.setExerciseCompleted(exerciseId, completed) },
+    )
+
+    fun updateActiveExercise(
+        exerciseId: String,
+        configuration: WorkoutItemConfiguration,
+    ) = launchOperation(
+        action = { repository.updateActiveExerciseConfiguration(exerciseId, configuration) },
     )
 
     fun pauseRest() = launchOperation(repository::pauseRest)

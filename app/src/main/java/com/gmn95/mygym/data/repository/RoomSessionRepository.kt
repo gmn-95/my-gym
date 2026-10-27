@@ -8,6 +8,8 @@ import com.gmn95.mygym.data.local.SessionRestTimerEntity
 import com.gmn95.mygym.data.local.WorkoutSessionEntity
 import com.gmn95.mygym.domain.session.SessionClock
 import com.gmn95.mygym.domain.session.TimerMath
+import com.gmn95.mygym.domain.WorkoutInputValidator
+import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -237,6 +239,43 @@ class RoomSessionRepository(
             if (isCompleted && exercise.restSeconds > 0) {
                 startRestForExercise(active, exercise)
             }
+        }
+    }
+
+    override suspend fun updateActiveExerciseConfiguration(
+        sessionExerciseId: String,
+        configuration: WorkoutItemConfiguration,
+    ) {
+        require(WorkoutInputValidator.isValidConfiguration(configuration))
+        database.withTransaction {
+            val active = sessionDao.getActive() ?: return@withTransaction
+            val exercise = sessionExerciseDao.getById(sessionExerciseId) ?: return@withTransaction
+            check(exercise.sessionId == active.id)
+            val series = sessionExerciseSetDao.getByExercise(exercise.id)
+            check(series.filter(SessionExerciseSetEntity::isCompleted).all { it.position <= configuration.sets })
+
+            if (configuration.sets < series.size) {
+                sessionExerciseSetDao.deleteIncompleteAfter(exercise.id, configuration.sets)
+            } else if (configuration.sets > series.size) {
+                sessionExerciseSetDao.insertAll(
+                    ((series.size + 1)..configuration.sets).map { position ->
+                        SessionExerciseSetEntity(
+                            id = idFactory(),
+                            sessionExerciseId = exercise.id,
+                            position = position,
+                            isCompleted = false,
+                        )
+                    },
+                )
+            }
+            sessionExerciseDao.update(
+                exercise.copy(
+                    sets = configuration.sets,
+                    repetitionsMin = configuration.repetitionsMin,
+                    repetitionsMax = configuration.repetitionsMax,
+                    restSeconds = configuration.restSeconds,
+                ),
+            )
         }
     }
 

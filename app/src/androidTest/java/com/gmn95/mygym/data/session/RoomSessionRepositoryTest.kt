@@ -228,6 +228,47 @@ class RoomSessionRepositoryTest {
     }
 
     @Test
+    fun updatesOnlyActiveSnapshotAndKeepsCompletedSeries() = runBlocking {
+        val workoutId = workoutRepository.createWorkout("Treino ajustável")
+        workoutRepository.createAndAddExercise(workoutId, "Puxada", null)
+        sessionRepository.startSession(workoutId)
+        var exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        sessionRepository.setExerciseSetCompleted(exercise.id, exercise.series[0].id, true)
+
+        sessionRepository.updateActiveExerciseConfiguration(
+            exercise.id,
+            WorkoutItemConfiguration(4, 6, 8, 90),
+        )
+
+        exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        assertEquals(4, exercise.sets)
+        assertEquals(4, exercise.series.size)
+        assertEquals(6, exercise.repetitionsMin)
+        assertEquals(8, exercise.repetitionsMax)
+        assertEquals(90, exercise.restSeconds)
+        assertTrue(exercise.series.first().isCompleted)
+
+        sessionRepository.setExerciseSetCompleted(exercise.id, exercise.series[1].id, true)
+        assertTrue(
+            runCatching {
+                sessionRepository.updateActiveExerciseConfiguration(
+                    exercise.id,
+                    WorkoutItemConfiguration(1, 6, 8, 90),
+                )
+            }.isFailure,
+        )
+
+        sessionRepository.updateActiveExerciseConfiguration(
+            exercise.id,
+            WorkoutItemConfiguration(2, 6, 8, 90),
+        )
+        exercise = sessionRepository.observeActiveSession().first()!!.exercises.single()
+        assertEquals(2, exercise.sets)
+        assertEquals(2, exercise.series.size)
+        assertTrue(exercise.series.all { it.isCompleted })
+    }
+
+    @Test
     fun completedSeriesDoesNotCreateTimerWhenExerciseHasNoRest() = runBlocking {
         val workoutId = workoutRepository.createWorkout("C — Sem descanso")
         workoutRepository.createAndAddExercise(

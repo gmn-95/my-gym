@@ -1,5 +1,6 @@
 package com.gmn95.mygym.data.repository
 
+import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import kotlinx.coroutines.flow.Flow
 
 interface SessionRepository {
@@ -26,6 +27,11 @@ interface SessionRepository {
     )
 
     suspend fun setExerciseCompleted(sessionExerciseId: String, isCompleted: Boolean)
+
+    suspend fun updateActiveExerciseConfiguration(
+        sessionExerciseId: String,
+        configuration: WorkoutItemConfiguration,
+    )
 
     suspend fun pauseRest()
 
