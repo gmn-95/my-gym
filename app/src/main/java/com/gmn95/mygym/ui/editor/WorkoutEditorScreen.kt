@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -136,6 +137,14 @@ fun WorkoutEditorScreen(
                     }
 
                     item {
+                        Text(
+                            text = stringResource(R.string.workout_editor_description),
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    item {
                         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                             OutlinedTextField(
                                 value = workoutName,
@@ -147,7 +156,7 @@ fun WorkoutEditorScreen(
                             Button(
                                 onClick = { onRenameWorkout(workoutName.trim()) },
                                 modifier = Modifier
-                                    .align(Alignment.End)
+                                    .fillMaxWidth()
                                     .padding(top = 8.dp),
                                 enabled = workoutName.isNotBlank() && workoutName.trim() != workout.name,
                             ) {
@@ -157,18 +166,24 @@ fun WorkoutEditorScreen(
                     }
 
                     item {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = stringResource(R.string.exercises),
                                 style = MaterialTheme.typography.titleLarge,
                             )
-                            Button(onClick = { showAddExerciseDialog = true }) {
+                            Text(
+                                text = stringResource(R.string.exercises_description),
+                                modifier = Modifier.padding(top = 4.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Button(
+                                onClick = { showAddExerciseDialog = true },
+                                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                            ) {
                                 Text(stringResource(R.string.add_exercise))
                             }
                         }
@@ -311,21 +326,17 @@ private fun ExerciseCard(
                 modifier = Modifier.padding(top = 8.dp),
                 color = MaterialTheme.colorScheme.primary,
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
+            OutlinedButton(onClick = onEdit, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                Text(stringResource(R.string.edit))
+            }
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onMoveUp, enabled = canMoveUp) {
                     Text(stringResource(R.string.move_up))
                 }
                 TextButton(onClick = onMoveDown, enabled = canMoveDown) {
                     Text(stringResource(R.string.move_down))
                 }
-                TextButton(onClick = onEdit) {
-                    Text(stringResource(R.string.edit))
-                }
+                Spacer(Modifier.weight(1f))
                 TextButton(onClick = onRemove) {
                     Text(stringResource(R.string.remove))
                 }

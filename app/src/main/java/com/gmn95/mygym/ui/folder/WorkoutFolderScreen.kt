@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -77,7 +79,17 @@ fun WorkoutFolderScreen(
                     Text(stringResource(R.string.edit))
                 }
             }
-            Text(stringResource(R.string.workouts), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(vertical = 12.dp))
+            Text(
+                stringResource(R.string.workouts),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            Text(
+                stringResource(R.string.folder_workouts_description),
+                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
             when {
                 uiState.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
                 uiState.folder == null -> Text(stringResource(R.string.workout_not_found))
@@ -163,22 +175,19 @@ private fun TrainingCard(
             workout.averageDurationMillis?.let { duration ->
                 Text(stringResource(R.string.average_duration, duration.formatDuration()), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
-            Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+            Button(onClick = onStart, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) {
+                Text(stringResource(R.string.start_workout))
+            }
+            OutlinedButton(onClick = onOpen, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text(stringResource(R.string.edit))
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
                 TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
+                TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = onDuplicate, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.duplicate), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                TextButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.delete), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                Button(onClick = onOpen, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.edit), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-            Button(onClick = onStart, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) { Text(stringResource(R.string.start_workout)) }
         }
     }
 }

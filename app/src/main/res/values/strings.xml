@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">my-gym</string>
     <string name="menu">Menu</string>
+    <string name="open_menu">Open menu</string>
     <string name="navigation_title">Navigation</string>
     <string name="my_workouts">My workout plans</string>
     <string name="home_description">Create a plan, then organize its workouts.</string>
@@ -14,6 +15,7 @@
     <string name="no_folders_title">No workout plans yet</string>
     <string name="no_folders_description">Use “New plan” to create your first plan.</string>
     <string name="no_trainings_description">This plan has no workouts. Add one such as Upper body, Lower body or Full body.</string>
+    <string name="folder_workouts_description">Organize, edit or start a workout from this plan.</string>
     <string name="delete_folder_title">Delete plan?</string>
     <string name="delete_folder_message">“%1$s” and its editable workouts will be removed. Completed sessions will not be affected.</string>
     <string name="edit_folder">Edit plan</string>
@@ -66,8 +68,10 @@
     <string name="folder_copy_name">%1$s (copy)</string>
     <string name="operation_error">The operation could not be completed. Please try again.</string>
     <string name="edit_workout">Edit workout</string>
+    <string name="workout_editor_description">Update the workout name and organize its exercises.</string>
     <string name="save_name">Save name</string>
     <string name="exercises">Exercises</string>
+    <string name="exercises_description">Add, configure and reorder the exercises in this workout.</string>
     <string name="add_exercise">Add exercise</string>
     <string name="no_exercises_description">This workout has no exercises. Add a manual exercise to begin.</string>
     <string name="workout_not_found">This workout no longer exists.</string>

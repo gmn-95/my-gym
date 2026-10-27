@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">my-gym</string>
     <string name="menu">Menu</string>
+    <string name="open_menu">Abrir menu</string>
     <string name="navigation_title">Navegação</string>
     <string name="my_workouts">Minhas fichas</string>
     <string name="home_description">Crie uma ficha e organize os treinos dentro dela.</string>
@@ -14,6 +15,7 @@
     <string name="no_folders_title">Nenhuma ficha criada</string>
     <string name="no_folders_description">Use “Nova ficha” para criar sua primeira ficha.</string>
     <string name="no_trainings_description">Esta ficha ainda não tem treinos. Adicione um, como Superiores, Inferiores ou Full body.</string>
+    <string name="folder_workouts_description">Organize, edite ou inicie os treinos desta ficha.</string>
     <string name="delete_folder_title">Excluir ficha?</string>
     <string name="delete_folder_message">“%1$s” e seus treinos editáveis serão removidos. Sessões concluídas não serão afetadas.</string>
     <string name="edit_folder">Editar ficha</string>
@@ -66,8 +68,10 @@
     <string name="folder_copy_name">%1$s (cópia)</string>
     <string name="operation_error">Não foi possível concluir a operação. Tente novamente.</string>
     <string name="edit_workout">Editar treino</string>
+    <string name="workout_editor_description">Atualize o nome e organize os exercícios deste treino.</string>
     <string name="save_name">Salvar nome</string>
     <string name="exercises">Exercícios</string>
+    <string name="exercises_description">Adicione, configure e reordene os exercícios deste treino.</string>
     <string name="add_exercise">Adicionar exercício</string>
     <string name="no_exercises_description">Este treino ainda não tem exercícios. Adicione um exercício manual para começar.</string>
     <string name="workout_not_found">Este treino não existe mais.</string>
