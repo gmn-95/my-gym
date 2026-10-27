@@ -1,5 +1,6 @@
 package com.gmn95.mygym.ui.catalog
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ fun ExerciseCatalogScreen(
     onAddExercise: (CatalogExercise) -> Unit,
     onMessageShown: () -> Unit,
 ) {
+    BackHandler(onBack = onBack)
     val snackbar = remember { SnackbarHostState() }
     val message = when (uiState.message) {
         CatalogMessage.ENTER_SEARCH_TERM -> stringResource(R.string.catalog_enter_search_term)

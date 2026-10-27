@@ -1,5 +1,6 @@
 package com.gmn95.mygym.ui.folder
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ fun WorkoutFolderScreen(
     onFinishActiveAndStart: (String) -> Unit,
     onMessageShown: () -> Unit,
 ) {
+    BackHandler(onBack = onBack)
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var showRenameDialog by rememberSaveable { mutableStateOf(false) }
     var workoutToDelete by remember { mutableStateOf<WorkoutSummary?>(null) }
