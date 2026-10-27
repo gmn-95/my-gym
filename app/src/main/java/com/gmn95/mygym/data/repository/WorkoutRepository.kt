@@ -26,6 +26,8 @@ interface WorkoutRepository {
 
     suspend fun deleteWorkout(id: String)
 
+    suspend fun moveWorkout(folderId: String, workoutId: String, offset: Int)
+
     suspend fun createAndAddExercise(
         workoutId: String,
         name: String,

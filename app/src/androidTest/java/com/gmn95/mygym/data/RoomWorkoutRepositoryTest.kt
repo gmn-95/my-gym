@@ -95,6 +95,16 @@ class RoomWorkoutRepositoryTest {
         assertEquals(listOf("A — Superiores", "B — Inferiores"), folder.workouts.map { it.name })
         assertEquals(listOf("Supino"), repository.observeWorkout(upperBodyId).first()!!.exercises.map { it.name })
         assertEquals(listOf("Agachamento"), repository.observeWorkout(lowerBodyId).first()!!.exercises.map { it.name })
+
+        repository.renameFolder(folderId, "Rotina principal")
+        repository.moveWorkout(folderId, lowerBodyId, -1)
+
+        val renamedAndReordered = repository.observeFolder(folderId).first()!!
+        assertEquals("Rotina principal", renamedAndReordered.name)
+        assertEquals(
+            listOf("B — Inferiores", "A — Superiores"),
+            renamedAndReordered.workouts.map { it.name },
+        )
     }
 
     @Test

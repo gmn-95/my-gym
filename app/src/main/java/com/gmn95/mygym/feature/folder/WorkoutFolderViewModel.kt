@@ -44,11 +44,19 @@ class WorkoutFolderViewModel(
         onCreated(workoutRepository.createWorkout(folderId, name))
     }
 
+    fun renameFolder(name: String) = launchOperation {
+        workoutRepository.renameFolder(folderId, name)
+    }
+
     fun duplicateWorkout(id: String, name: String) = launchOperation {
         workoutRepository.duplicateWorkout(id, name)
     }
 
     fun deleteWorkout(id: String) = launchOperation { workoutRepository.deleteWorkout(id) }
+
+    fun moveWorkout(id: String, offset: Int) = launchOperation {
+        workoutRepository.moveWorkout(folderId, id, offset)
+    }
 
     fun startWorkout(id: String, onStarted: () -> Unit) = startOperation(onStarted) {
         sessionRepository.startSession(id)

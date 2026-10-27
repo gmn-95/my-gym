@@ -14,6 +14,7 @@
     <string name="no_trainings_description">This plan has no workouts. Add one such as Upper body, Lower body or Full body.</string>
     <string name="delete_folder_title">Delete plan?</string>
     <string name="delete_folder_message">“%1$s” and its editable workouts will be removed. Completed sessions will not be affected.</string>
+    <string name="edit_folder">Edit plan</string>
     <string name="create">Create</string>
     <string name="workout_name">Workout name</string>
     <string name="delete_workout_title">Delete workout?</string>

@@ -14,6 +14,7 @@
     <string name="no_trainings_description">Esta ficha ainda não tem treinos. Adicione um, como Superiores, Inferiores ou Full body.</string>
     <string name="delete_folder_title">Excluir ficha?</string>
     <string name="delete_folder_message">“%1$s” e seus treinos editáveis serão removidos. Sessões concluídas não serão afetadas.</string>
+    <string name="edit_folder">Editar ficha</string>
     <string name="create">Criar</string>
     <string name="workout_name">Nome do treino</string>
     <string name="delete_workout_title">Excluir treino?</string>

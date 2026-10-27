@@ -43,16 +43,19 @@ import com.gmn95.mygym.feature.folder.WorkoutFolderUiState
 fun WorkoutFolderScreen(
     uiState: WorkoutFolderUiState,
     onBack: () -> Unit,
+    onRenameFolder: (String) -> Unit,
     onCreateWorkout: (String) -> Unit,
     onOpenWorkout: (String) -> Unit,
     onDuplicateWorkout: (String, String) -> Unit,
     onDeleteWorkout: (String) -> Unit,
+    onMoveWorkout: (String, Int) -> Unit,
     onStartWorkout: (String) -> Unit,
     onResumeActiveSession: () -> Unit,
     onFinishActiveAndStart: (String) -> Unit,
     onMessageShown: () -> Unit,
 ) {
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
+    var showRenameDialog by rememberSaveable { mutableStateOf(false) }
     var workoutToDelete by remember { mutableStateOf<WorkoutSummary?>(null) }
     var workoutToStart by remember { mutableStateOf<WorkoutSummary?>(null) }
     val snackbar = remember { SnackbarHostState() }
@@ -70,6 +73,9 @@ fun WorkoutFolderScreen(
             Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
                 Text(uiState.folder?.name.orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                TextButton(onClick = { showRenameDialog = true }, enabled = uiState.folder != null) {
+                    Text(stringResource(R.string.edit))
+                }
             }
             Text(stringResource(R.string.workouts), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(vertical = 12.dp))
             when {
@@ -78,12 +84,17 @@ fun WorkoutFolderScreen(
                 uiState.folder.workouts.isEmpty() -> Text(stringResource(R.string.no_trainings_description), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(uiState.folder.workouts, key = WorkoutSummary::id) { workout ->
+                        val workoutIndex = uiState.folder.workouts.indexOf(workout)
                         val duplicateName = stringResource(R.string.workout_copy_name, workout.name)
                         TrainingCard(
                             workout = workout,
                             onOpen = { onOpenWorkout(workout.id) },
                             onDuplicate = { onDuplicateWorkout(workout.id, duplicateName) },
                             onDelete = { workoutToDelete = workout },
+                            canMoveUp = workoutIndex > 0,
+                            canMoveDown = workoutIndex < uiState.folder.workouts.lastIndex,
+                            onMoveUp = { onMoveWorkout(workout.id, -1) },
+                            onMoveDown = { onMoveWorkout(workout.id, 1) },
                             onStart = {
                                 if (uiState.activeSession == null) onStartWorkout(workout.id) else workoutToStart = workout
                             },
@@ -97,6 +108,15 @@ fun WorkoutFolderScreen(
         TrainingNameDialog(onDismiss = { showCreateDialog = false }) { name ->
             onCreateWorkout(name)
             showCreateDialog = false
+        }
+    }
+    if (showRenameDialog) {
+        FolderNameDialog(
+            initialName = uiState.folder?.name.orEmpty(),
+            onDismiss = { showRenameDialog = false },
+        ) { name ->
+            onRenameFolder(name)
+            showRenameDialog = false
         }
     }
     workoutToDelete?.let { workout ->
@@ -125,7 +145,17 @@ fun WorkoutFolderScreen(
 }
 
 @Composable
-private fun TrainingCard(workout: WorkoutSummary, onOpen: () -> Unit, onDuplicate: () -> Unit, onDelete: () -> Unit, onStart: () -> Unit) {
+private fun TrainingCard(
+    workout: WorkoutSummary,
+    onOpen: () -> Unit,
+    onDuplicate: () -> Unit,
+    onDelete: () -> Unit,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onStart: () -> Unit,
+) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Column(Modifier.padding(16.dp)) {
             Text(workout.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -134,6 +164,8 @@ private fun TrainingCard(workout: WorkoutSummary, onOpen: () -> Unit, onDuplicat
                 Text(stringResource(R.string.average_duration, duration.formatDuration()), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             }
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onMoveUp, enabled = canMoveUp) { Text(stringResource(R.string.move_up)) }
+                TextButton(onClick = onMoveDown, enabled = canMoveDown) { Text(stringResource(R.string.move_down)) }
                 TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
                 TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
                 Button(onClick = onOpen) { Text(stringResource(R.string.edit)) }
@@ -141,6 +173,18 @@ private fun TrainingCard(workout: WorkoutSummary, onOpen: () -> Unit, onDuplicat
             Button(onClick = onStart, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) { Text(stringResource(R.string.start_workout)) }
         }
     }
+}
+
+@Composable
+private fun FolderNameDialog(initialName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var name by rememberSaveable { mutableStateOf(initialName) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.edit_folder)) },
+        text = { OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.folder_name)) }, singleLine = true) },
+        confirmButton = { Button(onClick = { onConfirm(name) }, enabled = name.trim().isNotEmpty()) { Text(stringResource(R.string.save_name)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable

@@ -206,12 +206,14 @@ fun MyGymApp() {
                 WorkoutFolderScreen(
                     uiState = uiState,
                     onBack = { selectedFolderId = null },
+                    onRenameFolder = folderViewModel::renameFolder,
                     onCreateWorkout = { name ->
                         folderViewModel.createWorkout(name) { selectedWorkoutId = it }
                     },
                     onOpenWorkout = { selectedWorkoutId = it },
                     onDuplicateWorkout = folderViewModel::duplicateWorkout,
                     onDeleteWorkout = folderViewModel::deleteWorkout,
+                    onMoveWorkout = folderViewModel::moveWorkout,
                     onStartWorkout = { id -> folderViewModel.startWorkout(id) { showActiveSession = true } },
                     onResumeActiveSession = { showActiveSession = true },
                     onFinishActiveAndStart = { id ->

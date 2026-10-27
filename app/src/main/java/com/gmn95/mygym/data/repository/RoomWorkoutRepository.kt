@@ -182,6 +182,20 @@ class RoomWorkoutRepository(
         }
     }
 
+    override suspend fun moveWorkout(folderId: String, workoutId: String, offset: Int) {
+        require(offset == -1 || offset == 1)
+        database.withTransaction {
+            val workouts = workoutGroupDao.getAll().filter { it.workoutFolderId == folderId }
+            val currentIndex = workouts.indexOfFirst { it.id == workoutId }
+            if (currentIndex == -1) return@withTransaction
+            val targetIndex = currentIndex + offset
+            if (targetIndex !in workouts.indices) return@withTransaction
+
+            workoutGroupDao.updatePosition(workouts[currentIndex].id, targetIndex)
+            workoutGroupDao.updatePosition(workouts[targetIndex].id, currentIndex)
+        }
+    }
+
     /** Compatibilidade dos testes de persistência: cria uma ficha contendo um treino. */
     suspend fun createWorkout(name: String): String {
         val folderId = createFolder(name)
