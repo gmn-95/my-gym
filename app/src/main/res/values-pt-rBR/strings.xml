@@ -61,6 +61,7 @@
     <string name="no_workouts_title">Nenhuma ficha criada</string>
     <string name="no_workouts_description">Use “Nova ficha” para criar seu primeiro treino.</string>
     <string name="workout_copy_name">%1$s (cópia)</string>
+    <string name="folder_copy_name">%1$s (cópia)</string>
     <string name="operation_error">Não foi possível concluir a operação. Tente novamente.</string>
     <string name="edit_workout">Editar treino</string>
     <string name="save_name">Salvar nome</string>

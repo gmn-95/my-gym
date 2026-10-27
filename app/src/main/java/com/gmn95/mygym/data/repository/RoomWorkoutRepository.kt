@@ -101,6 +101,43 @@ class RoomWorkoutRepository(
         workoutFolderDao.rename(id, name.trim(), currentTimeMillis())
     }
 
+    override suspend fun duplicateFolder(id: String, duplicateName: String): String? {
+        require(WorkoutInputValidator.isValidName(duplicateName))
+        return database.withTransaction {
+            val source = workoutFolderDao.getById(id) ?: return@withTransaction null
+            val sourceWorkouts = workoutGroupDao.getAll().filter { it.workoutFolderId == id }
+            val now = currentTimeMillis()
+            val duplicateId = idFactory()
+            workoutFolderDao.insert(
+                source.copy(
+                    id = duplicateId,
+                    name = duplicateName.trim(),
+                    position = workoutFolderDao.nextPosition(),
+                    createdAtEpochMillis = now,
+                    updatedAtEpochMillis = now,
+                ),
+            )
+
+            sourceWorkouts.forEach { sourceWorkout ->
+                val duplicateWorkoutId = idFactory()
+                workoutGroupDao.insert(
+                    sourceWorkout.copy(
+                        id = duplicateWorkoutId,
+                        workoutFolderId = duplicateId,
+                        createdAtEpochMillis = now,
+                        updatedAtEpochMillis = now,
+                    ),
+                )
+                workoutItemDao.insertAll(
+                    workoutItemDao.getByWorkoutGroup(sourceWorkout.id).map { item ->
+                        item.copy(id = idFactory(), workoutGroupId = duplicateWorkoutId)
+                    },
+                )
+            }
+            duplicateId
+        }
+    }
+
     override suspend fun deleteFolder(id: String) {
         database.withTransaction {
             val folder = workoutFolderDao.getById(id) ?: return@withTransaction

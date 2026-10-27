@@ -17,9 +17,12 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.WorkoutFolderSummary
+import com.gmn95.mygym.feature.home.HomeMessage
 import com.gmn95.mygym.feature.home.HomeUiState
 
 @Composable
@@ -40,18 +44,32 @@ fun HomeScreen(
     uiState: HomeUiState,
     onCreateFolder: (String) -> Unit,
     onOpenFolder: (String) -> Unit,
+    onDuplicateFolder: (String, String) -> Unit,
     onDeleteFolder: (String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenBackup: () -> Unit,
     onOpenSettings: () -> Unit,
     onResumeActiveSession: () -> Unit,
+    onMessageShown: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var folderToDelete by remember { mutableStateOf<WorkoutFolderSummary?>(null) }
+    val snackbar = remember { SnackbarHostState() }
+    val message = when (uiState.message) {
+        HomeMessage.OPERATION_FAILED -> stringResource(R.string.operation_error)
+        null -> null
+    }
+    LaunchedEffect(message) {
+        if (message != null) {
+            snackbar.showSnackbar(message)
+            onMessageShown()
+        }
+    }
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             ExtendedFloatingActionButton(onClick = { showCreateDialog = true }) {
                 Text(stringResource(R.string.create_folder))
@@ -89,7 +107,13 @@ fun HomeScreen(
                 uiState.folders.isEmpty() -> EmptyFolders()
                 else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     items(uiState.folders, key = WorkoutFolderSummary::id) { folder ->
-                        FolderCard(folder, { onOpenFolder(folder.id) }, { folderToDelete = folder })
+                        val duplicateName = stringResource(R.string.folder_copy_name, folder.name)
+                        FolderCard(
+                            folder = folder,
+                            onOpen = { onOpenFolder(folder.id) },
+                            onDuplicate = { onDuplicateFolder(folder.id, duplicateName) },
+                            onDelete = { folderToDelete = folder },
+                        )
                     }
                 }
             }
@@ -113,15 +137,21 @@ fun HomeScreen(
 }
 
 @Composable
-private fun FolderCard(folder: WorkoutFolderSummary, onOpen: () -> Unit, onDelete: () -> Unit) {
+private fun FolderCard(
+    folder: WorkoutFolderSummary,
+    onOpen: () -> Unit,
+    onDuplicate: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Card(Modifier.fillMaxWidth().clickable(onClick = onOpen)) {
         Column(Modifier.padding(16.dp)) {
             Text(folder.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(pluralStringResource(R.plurals.workout_count, folder.workoutCount, folder.workoutCount), Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onDuplicate) { Text(stringResource(R.string.duplicate)) }
                 TextButton(onClick = onDelete) { Text(stringResource(R.string.delete)) }
-                Button(onClick = onOpen) { Text(stringResource(R.string.workouts)) }
             }
+            Button(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts)) }
         }
     }
 }

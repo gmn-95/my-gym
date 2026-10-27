@@ -16,6 +16,9 @@ interface WorkoutRepository {
 
     suspend fun renameFolder(id: String, name: String)
 
+    /** Duplica os treinos e suas configurações, sem copiar sessões históricas. */
+    suspend fun duplicateFolder(id: String, duplicateName: String): String?
+
     suspend fun deleteFolder(id: String)
 
     suspend fun createWorkout(folderId: String, name: String): String

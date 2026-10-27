@@ -61,6 +61,12 @@ class HomeViewModel(
         }
     }
 
+    fun duplicateFolder(id: String, duplicateName: String) {
+        launchOperation {
+            workoutRepository.duplicateFolder(id, duplicateName)
+        }
+    }
+
     fun clearMessage() {
         message.value = null
     }

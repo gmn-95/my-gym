@@ -108,6 +108,34 @@ class RoomWorkoutRepositoryTest {
     }
 
     @Test
+    fun duplicatesFolderWithWorkoutsAndConfigurationsWithoutCopyingHistory() = runBlocking {
+        val folderId = repository.createFolder("Rotina")
+        val upperBodyId = repository.createWorkout(folderId, "A — Superiores")
+        val lowerBodyId = repository.createWorkout(folderId, "B — Inferiores")
+        repository.createAndAddExercise(
+            upperBodyId,
+            "Supino",
+            null,
+            WorkoutItemConfiguration(4, 8, 10, 90),
+        )
+        repository.createAndAddExercise(lowerBodyId, "Agachamento", null)
+
+        val duplicateFolderId = repository.duplicateFolder(folderId, "Rotina (cópia)")!!
+        val duplicate = repository.observeFolder(duplicateFolderId).first()!!
+
+        assertEquals("Rotina (cópia)", duplicate.name)
+        assertEquals(listOf("A — Superiores", "B — Inferiores"), duplicate.workouts.map { it.name })
+        val duplicatedUpperBody = repository.observeWorkout(duplicate.workouts.first().id).first()!!
+        assertEquals("Supino", duplicatedUpperBody.exercises.single().name)
+        assertEquals(4, duplicatedUpperBody.exercises.single().configuration.sets)
+        assertEquals(90, duplicatedUpperBody.exercises.single().configuration.restSeconds)
+
+        repository.removeExercise(upperBodyId, repository.observeWorkout(upperBodyId).first()!!.exercises.single().id)
+        assertEquals(1, repository.observeWorkout(duplicate.workouts.first().id).first()!!.exercises.size)
+        assertTrue(database.workoutSessionDao().getAll().isEmpty())
+    }
+
+    @Test
     fun workoutSummaryUsesOnlyCompletedSessionsForAverageDuration() = runBlocking {
         val workoutId = repository.createWorkout("A — Superiores")
         database.workoutSessionDao().insert(

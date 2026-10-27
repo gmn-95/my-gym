@@ -268,6 +268,7 @@ fun MyGymApp() {
                     }
                 },
                 onOpenFolder = { selectedFolderId = it },
+                onDuplicateFolder = homeViewModel::duplicateFolder,
                 onOpenHistory = {
                     showCalendar = false
                     showHistory = true
@@ -280,6 +281,7 @@ fun MyGymApp() {
                 onOpenSettings = { showSettings = true },
                 onDeleteFolder = homeViewModel::deleteFolder,
                 onResumeActiveSession = { showActiveSession = true },
+                onMessageShown = homeViewModel::clearMessage,
             )
             }
             }
