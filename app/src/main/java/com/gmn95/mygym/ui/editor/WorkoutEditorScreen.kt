@@ -43,6 +43,7 @@ import com.gmn95.mygym.data.repository.WorkoutExercise
 import com.gmn95.mygym.domain.WorkoutInputValidator
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
 import com.gmn95.mygym.feature.editor.WorkoutEditorUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun WorkoutEditorScreen(
@@ -117,21 +118,10 @@ fun WorkoutEditorScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TextButton(onClick = onBack) {
-                                Text(stringResource(R.string.back))
-                            }
-                            Text(
-                                text = stringResource(R.string.edit_workout),
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.headlineSmall,
-                            )
-                        }
+                        BackNavigationHeader(
+                            title = stringResource(R.string.edit_workout),
+                            onBack = onBack,
+                        )
                     }
 
                     item {

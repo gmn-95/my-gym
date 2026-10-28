@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -33,10 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.ActiveRestTimer
@@ -47,6 +50,7 @@ import com.gmn95.mygym.data.repository.WorkoutSessionStatus
 import com.gmn95.mygym.feature.session.SessionUiState
 import com.gmn95.mygym.domain.WorkoutInputValidator
 import com.gmn95.mygym.domain.WorkoutItemConfiguration
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun SessionScreen(
@@ -122,21 +126,10 @@ fun SessionScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TextButton(onClick = onBack) {
-                                Text(stringResource(R.string.back))
-                            }
-                            Text(
-                                text = stringResource(R.string.workout_in_progress),
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.headlineSmall,
-                            )
-                        }
+                        BackNavigationHeader(
+                            title = stringResource(R.string.workout_in_progress),
+                            onBack = onBack,
+                        )
                     }
 
                     item {
@@ -196,13 +189,20 @@ fun SessionScreen(
                                 onClick = { showCancelConfirmation = true },
                                 modifier = Modifier.weight(1f),
                             ) {
-                                Text(stringResource(R.string.cancel_workout))
+                                Text(stringResource(R.string.cancel))
                             }
                             Button(
                                 onClick = { showCompleteConfirmation = true },
                                 modifier = Modifier.weight(1f),
                             ) {
-                                Text(stringResource(R.string.finish_workout))
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_check),
+                                    contentDescription = null,
+                                )
+                                Text(
+                                    text = stringResource(R.string.finish),
+                                    modifier = Modifier.padding(start = 8.dp),
+                                )
                             }
                         }
                     }
@@ -326,13 +326,19 @@ private fun CurrentSeriesCard(
                     modifier = Modifier.weight(1f),
                     enabled = progress.previous != null,
                 ) {
-                    Text(stringResource(R.string.previous_series))
+                    Icon(
+                        painter = painterResource(R.drawable.ic_skip_previous),
+                        contentDescription = stringResource(R.string.previous_series),
+                    )
                 }
                 Button(
                     onClick = { onCompleteAndAdvance(current) },
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text(stringResource(R.string.complete_and_next_series))
+                    Icon(
+                        painter = painterResource(R.drawable.ic_skip_next),
+                        contentDescription = stringResource(R.string.complete_and_next_series),
+                    )
                 }
             }
         }
@@ -353,7 +359,13 @@ private fun SessionTimerCard(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(workoutName, style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = workoutName,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+            )
             Text(
                 text = formatSessionDuration(activeDurationMillis),
                 modifier = Modifier.padding(top = 12.dp),
@@ -369,14 +381,24 @@ private fun SessionTimerCard(
             )
             Button(
                 onClick = if (status == WorkoutSessionStatus.ACTIVE) onPause else onResume,
-                modifier = Modifier.padding(top = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
             ) {
+                Icon(
+                    painter = painterResource(
+                        if (status == WorkoutSessionStatus.ACTIVE) R.drawable.ic_pause
+                        else R.drawable.ic_play,
+                    ),
+                    contentDescription = null,
+                )
                 Text(
                     if (status == WorkoutSessionStatus.ACTIVE) {
-                        stringResource(R.string.pause_session)
+                        stringResource(R.string.pause)
                     } else {
                         stringResource(R.string.resume_session)
                     },
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
         }
@@ -399,11 +421,18 @@ private fun RestTimerDialog(
         title = {
             Text(
                 text = stringResource(R.string.rest_for_exercise, timer.exerciseName),
+                modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         },
         text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
             Text(
                 text = formatRestDuration(remainingMillis),
                 color = if (isFinished) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
@@ -434,29 +463,39 @@ private fun RestTimerDialog(
             }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (!isFinished) {
-                    TextButton(
+                    Button(
                         onClick = if (timer.status == RestTimerStatus.RUNNING) onPause else onResume,
+                        modifier = Modifier.weight(1f),
                     ) {
-                        Text(
-                            if (timer.status == RestTimerStatus.RUNNING) {
-                                stringResource(R.string.pause)
-                            } else {
-                                stringResource(R.string.continue_action)
-                            },
+                        Icon(
+                            painter = painterResource(
+                                if (timer.status == RestTimerStatus.RUNNING) R.drawable.ic_pause
+                                else R.drawable.ic_play,
+                            ),
+                            contentDescription = stringResource(
+                                if (timer.status == RestTimerStatus.RUNNING) R.string.pause
+                                else R.string.continue_action,
+                            ),
                         )
                     }
                 }
-                TextButton(onClick = onReset) {
-                    Text(stringResource(R.string.restart))
+                OutlinedButton(
+                    onClick = onReset,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_restart),
+                        contentDescription = stringResource(R.string.restart),
+                    )
                 }
             }
             }
         },
         confirmButton = {
-            Button(onClick = onEnd) {
+            Button(onClick = onEnd, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.end_rest))
             }
         },

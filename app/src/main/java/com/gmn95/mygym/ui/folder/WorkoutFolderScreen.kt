@@ -40,6 +40,7 @@ import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.WorkoutSummary
 import com.gmn95.mygym.feature.folder.WorkoutFolderMessage
 import com.gmn95.mygym.feature.folder.WorkoutFolderUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun WorkoutFolderScreen(
@@ -73,10 +74,10 @@ fun WorkoutFolderScreen(
         floatingActionButton = { ExtendedFloatingActionButton(onClick = { showCreateDialog = true }) { Text(stringResource(R.string.add_workout)) } },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp)) {
-            Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
-                Text(uiState.folder?.name.orEmpty(), Modifier.weight(1f), style = MaterialTheme.typography.headlineMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
+            BackNavigationHeader(
+                title = uiState.folder?.name.orEmpty(),
+                onBack = onBack,
+            )
             OutlinedButton(
                 onClick = { showRenameDialog = true },
                 modifier = Modifier
