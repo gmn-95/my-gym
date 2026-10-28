@@ -77,6 +77,7 @@ fun WorkoutFolderScreen(
             BackNavigationHeader(
                 title = uiState.folder?.name.orEmpty(),
                 onBack = onBack,
+                horizontalPadding = 0.dp,
             )
             OutlinedButton(
                 onClick = { showRenameDialog = true },

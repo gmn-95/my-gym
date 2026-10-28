@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.CompletedWorkoutSessionSummary
 import com.gmn95.mygym.feature.history.HistoryUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -70,12 +71,10 @@ fun CalendarScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            TextButton(onClick = onBack) {
-                Text(stringResource(R.string.back))
-            }
-            Text(
-                text = stringResource(R.string.calendar),
-                style = MaterialTheme.typography.headlineMedium,
+            BackNavigationHeader(
+                title = stringResource(R.string.calendar),
+                onBack = onBack,
+                horizontalPadding = 0.dp,
             )
             Row(
                 modifier = Modifier

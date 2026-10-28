@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.CompletedSessionExercise
 import com.gmn95.mygym.feature.history.HistoryDetailUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 import java.text.DateFormat
 import java.util.Date
 
@@ -63,10 +64,11 @@ fun HistoryDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    TextButton(onClick = onBack) {
-                        Text(stringResource(R.string.back))
-                    }
-                    Text(session.workoutName, style = MaterialTheme.typography.headlineMedium)
+                    BackNavigationHeader(
+                        title = session.workoutName,
+                        onBack = onBack,
+                        horizontalPadding = 0.dp,
+                    )
                     Text(
                         text = DateFormat.getDateTimeInstance(
                             DateFormat.MEDIUM,

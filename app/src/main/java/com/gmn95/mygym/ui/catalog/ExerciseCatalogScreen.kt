@@ -39,6 +39,7 @@ import com.gmn95.mygym.R
 import com.gmn95.mygym.data.remote.CatalogExercise
 import com.gmn95.mygym.feature.catalog.CatalogMessage
 import com.gmn95.mygym.feature.catalog.ExerciseCatalogUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun ExerciseCatalogScreen(
@@ -68,10 +69,11 @@ fun ExerciseCatalogScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
-                    Text(stringResource(R.string.catalog_title), style = MaterialTheme.typography.headlineSmall)
-                }
+                BackNavigationHeader(
+                    title = stringResource(R.string.catalog_title),
+                    onBack = onBack,
+                    horizontalPadding = 0.dp,
+                )
             }
             item {
                 Text(

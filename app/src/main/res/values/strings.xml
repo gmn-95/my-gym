@@ -3,7 +3,7 @@
     <string name="app_name">my-gym</string>
     <string name="menu">Menu</string>
     <string name="open_menu">Open menu</string>
-    <string name="navigation_title">Navigation</string>
+    <string name="drawer_description">Your personal workout space</string>
     <string name="my_workouts">My workout plans</string>
     <string name="home_description">Create a plan, then organize its workouts.</string>
     <string name="create_workout">New workout</string>

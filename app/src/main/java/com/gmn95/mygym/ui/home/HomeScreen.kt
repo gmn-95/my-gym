@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -84,13 +85,24 @@ fun HomeScreen(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(
-                    stringResource(R.string.navigation_title),
-                    modifier = Modifier.padding(24.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                )
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp)) {
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        stringResource(R.string.drawer_description),
+                        modifier = Modifier.padding(top = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                HorizontalDivider()
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.history)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_history),
+                            contentDescription = null,
+                        )
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -100,6 +112,12 @@ fun HomeScreen(
                 )
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.calendar)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar),
+                            contentDescription = null,
+                        )
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -109,6 +127,12 @@ fun HomeScreen(
                 )
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.backup_short)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_backup),
+                            contentDescription = null,
+                        )
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -118,6 +142,12 @@ fun HomeScreen(
                 )
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.settings_short)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings),
+                            contentDescription = null,
+                        )
+                    },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -147,7 +177,9 @@ fun HomeScreen(
                 }
                 Text(
                     stringResource(R.string.my_workouts),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp),
                     style = MaterialTheme.typography.headlineMedium,
                 )
             }

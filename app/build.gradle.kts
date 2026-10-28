@@ -27,8 +27,8 @@ android {
         applicationId = "com.gmn95.mygym"
         minSdk = 26
         targetSdk = 37
-        versionCode = 23
-        versionName = "0.22.0"
+        versionCode = 24
+        versionName = "0.23.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.CustomExercise
 import com.gmn95.mygym.feature.exercise.SavedExercisesUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun SavedExercisesScreen(
@@ -79,22 +79,15 @@ fun SavedExercisesScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    TextButton(
-                        onClick = onBack,
-                        modifier = Modifier.padding(start = 12.dp, top = 8.dp),
-                    ) {
-                        Text(stringResource(R.string.back))
-                    }
+                    BackNavigationHeader(
+                        title = stringResource(R.string.saved_exercises),
+                        onBack = onBack,
+                    )
                 }
                 item {
                     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                         Text(
-                            text = stringResource(R.string.saved_exercises),
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                        Text(
                             text = stringResource(R.string.saved_exercises_description),
-                            modifier = Modifier.padding(top = 4.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         OutlinedTextField(

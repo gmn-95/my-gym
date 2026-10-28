@@ -31,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gmn95.mygym.R
 import com.gmn95.mygym.feature.backup.BackupMessage
 import com.gmn95.mygym.feature.backup.BackupViewModel
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 
 @Composable
 fun BackupScreen(
@@ -77,8 +78,11 @@ fun BackupScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            TextButton(onClick = onBack) { Text(stringResource(R.string.back)) }
-            Text(stringResource(R.string.backup_title), style = MaterialTheme.typography.headlineMedium)
+            BackNavigationHeader(
+                title = stringResource(R.string.backup_title),
+                onBack = onBack,
+                horizontalPadding = 0.dp,
+            )
             Text(
                 text = stringResource(R.string.backup_description),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -35,6 +35,7 @@ import com.gmn95.mygym.R
 import com.gmn95.mygym.data.repository.CompletedWorkoutSessionSummary
 import com.gmn95.mygym.feature.history.HistoryMessage
 import com.gmn95.mygym.feature.history.HistoryUiState
+import com.gmn95.mygym.ui.components.BackNavigationHeader
 import java.text.DateFormat
 import java.util.Date
 
@@ -103,12 +104,10 @@ fun HistoryScreen(
         ) {
             item {
                 Column(Modifier.fillMaxWidth()) {
-                    TextButton(onClick = onBack) {
-                        Text(stringResource(R.string.back))
-                    }
-                    Text(
-                        text = stringResource(R.string.history),
-                        style = MaterialTheme.typography.headlineMedium,
+                    BackNavigationHeader(
+                        title = stringResource(R.string.history),
+                        onBack = onBack,
+                        horizontalPadding = 0.dp,
                     )
                     OutlinedButton(
                         onClick = { showClearConfirmation = true },
